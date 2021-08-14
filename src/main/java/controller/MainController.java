@@ -15,19 +15,7 @@ public class MainController {
     public MainController() {
         socketController = new SocketController();
 
-//        System.out.println("************start");
-//        EntityManager em = ENTITY_MANAGER_FACTORY.createEntityManager();
         String query = "select max(\"userID\") from \"User\"";
-//
-//        TypedQuery<Long> tq = em.createQuery(query, Long.class);
-//        Long id;
-//        id = tq.getSingleResult();
-//        System.out.println("id=" + id);
-//
-//        em.close();
-//
-//        ENTITY_MANAGER_FACTORY.close();
-//        System.out.println("**************end");
 
         String url = "jdbc:postgresql://localhost:5432/postgres";
         String user = "postgres";

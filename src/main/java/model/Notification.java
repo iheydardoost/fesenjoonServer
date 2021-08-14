@@ -10,10 +10,4 @@ public class Notification extends Message{
     public Notification() {
     }
 
-//    public Notification(String msgText, LocalDateTime msgDateTime, long userID, NOTIFICATION_CONTEX notifContex) {
-//        super(msgText, msgDateTime, userID);
-//        this.notifContex = notifContex;
-//        this.seen = false;
-//    }
-
 }
