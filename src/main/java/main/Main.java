@@ -6,11 +6,15 @@ import controller.MainController;
 
 public class Main {
     private static MainController mainController;
+
     public static void main(String[] args) {
+        initialize();
+        mainController = new MainController();
+    }
+
+    private static void initialize(){
         LogHandler.initLogger(false);
         JsonHandler.initMapper();
-
-        mainController = new MainController();
     }
 
     public static MainController getMainController() {

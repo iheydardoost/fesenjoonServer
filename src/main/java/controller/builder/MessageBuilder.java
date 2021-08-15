@@ -1,8 +1,11 @@
 package controller.builder;
 
+import main.Main;
 import model.Message;
 import model.MessageStatus;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 
 public class MessageBuilder {
@@ -25,6 +28,16 @@ public class MessageBuilder {
     }
 
     private long findLastMessageID(){
+        String query = "select max(\"msgID\") from \"message\"";
+        ResultSet rs = Main.getMainController().getDbCommunicator().executeQuery(query);
+        try {
+            rs.next();
+            long lastMessageID = rs.getLong(1);
+            rs.close();
+            return lastMessageID;
+        } catch (SQLException e) {
+            //e.printStackTrace();
+        }
         return 0;
     }
 

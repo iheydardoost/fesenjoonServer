@@ -1,0 +1,4 @@
+{
+  "serverSocketConfigPath" : "./src/main/config/server_socket_config.json",
+  "dbConnectionConfigPath" : "./src/main/config/db_connection_config.json"
+}

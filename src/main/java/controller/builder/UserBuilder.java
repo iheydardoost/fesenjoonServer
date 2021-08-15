@@ -1,8 +1,11 @@
 package controller.builder;
 
+import main.Main;
 import model.LastSeenStatus;
 import model.User;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -28,6 +31,16 @@ public class UserBuilder {
     }
 
     private long findLastUserID(){
+        String query = "select max(\"userID\") from \"User\"";
+        ResultSet rs = Main.getMainController().getDbCommunicator().executeQuery(query);
+        try {
+            rs.next();
+            long lastUserID = rs.getLong(1);
+            rs.close();
+            return lastUserID;
+        } catch (SQLException e) {
+            //e.printStackTrace();
+        }
         return 0;
     }
 

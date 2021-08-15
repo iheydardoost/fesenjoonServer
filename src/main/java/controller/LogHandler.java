@@ -29,7 +29,7 @@ public class LogHandler {
     private static void initFileAppender(){
         fileAppender.setThreshold(Level.INFO);
         fileAppender.setImmediateFlush(true);
-        fileAppender.setFile(".\\fsjLog.log");
+        fileAppender.setFile("./fsjLog.log");
         String pattern = "[%d] {%p | %C{1}} : %m%n";
         fileAppender.setLayout(new PatternLayout(pattern));
         fileAppender.activateOptions();

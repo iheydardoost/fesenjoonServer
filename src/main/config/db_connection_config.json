@@ -1,0 +1,5 @@
+{
+  "url" : "jdbc:postgresql://localhost:5432/test1",
+  "user" : "postgres",
+  "password" : "admin"
+}

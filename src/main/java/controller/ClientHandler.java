@@ -20,7 +20,7 @@ public class ClientHandler implements Runnable{
     private InputStream input;
     private int authToken;
     private int clientID;
-    private int userID;
+    private long userID;
     private final LinkedList<Packet> requests;
     private final LinkedList<Packet> responses;
 
@@ -71,7 +71,7 @@ public class ClientHandler implements Runnable{
                     }
                 }
                 if(requests.size()>0){
-                    handleRequest(requests.removeFirst());
+                    Main.getMainController().handleRequest(requests.removeFirst());
                 }
             }
         } catch (IOException e) {
@@ -92,10 +92,6 @@ public class ClientHandler implements Runnable{
         }
     }
 
-    public void handleRequest(Packet rp){
-
-    }
-
     public void addResponse(Packet rp){
         synchronized (responses) {
             responses.add(rp);
@@ -114,11 +110,11 @@ public class ClientHandler implements Runnable{
         return clientID;
     }
 
-    public int getUserID() {
+    public long getUserID() {
         return userID;
     }
 
-    public void setUserID(int userID) {
+    public void setUserID(long userID) {
         this.userID = userID;
     }
 }

@@ -1,34 +1,33 @@
 package controller;
 
 import main.LoopHandler;
+import main.Main;
+import model.config.ServerSocketConfig;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.Random;
-import java.util.Scanner;
 
 public class SocketController implements Runnable{
     private ServerSocket serverSocket;
-    private InetAddress ipAddress;
-    private int port;
+    private ServerSocketConfig serverSocketConfig;
     private final LoopHandler loopHandler;
     private final LinkedList<ClientHandler> clients;
     private static final Random random = new Random();
 
     public SocketController() {
         clients = new LinkedList<>();
-        getSocketConfig();
+        serverSocketConfig = Main.getMainController().getConfigLoader().getServerSocketConfig();
         try {
-            this.serverSocket = new ServerSocket(port,50, ipAddress);
+            this.serverSocket =
+                    new ServerSocket(serverSocketConfig.getPort(),50, serverSocketConfig.getIpAddress());
         } catch (IOException e){
             //e.printStackTrace();
-            LogHandler.logger.error("could not run Server on address " + ipAddress.getHostAddress() + " and port " + port);
+            LogHandler.logger.error("could not run Server on address "
+                    + serverSocketConfig.getIpAddress().getHostAddress()
+                    + " and port " + serverSocketConfig.getPort());
         }
         loopHandler = new LoopHandler(600, this);
         //loopHandler.setNonStop(true);
@@ -53,32 +52,6 @@ public class SocketController implements Runnable{
         }
     }
 
-    private void getSocketConfig(){
-        String path = "src/main/config/server_socket_config.txt";
-        File file = new File(path);
-        if(file.isFile()) {
-            try {
-                Scanner scanner = new Scanner(file);
-                String[] strings = scanner.nextLine().split(",");
-                ipAddress = InetAddress.getByName(strings[0]);
-                port = Integer.parseInt(strings[1]);
-                LogHandler.logger.info(ipAddress.getHostAddress() + " / port:" + port + " selected.");
-                return;
-            } catch (FileNotFoundException | UnknownHostException e) {
-                //e.printStackTrace();
-                LogHandler.logger.error("server socket config file could not be used");
-            }
-        }
-        try {
-            ipAddress = InetAddress.getByName("localhost");
-            port = 8000;
-            LogHandler.logger.info("localhost / port:8000 selected.");
-        } catch (UnknownHostException e) {
-            //e.printStackTrace();
-            LogHandler.logger.error("could not connect to Server via localhost " + " and port " + port);
-        }
-    }
-
     public ClientHandler getClient(int clientID){
         synchronized (clients) {
             for (ClientHandler client : clients) {
@@ -99,7 +72,7 @@ public class SocketController implements Runnable{
         }
     }
 
-    public ClientHandler getClientByID(int userID){
+    public ClientHandler getClientByID(long userID){
         synchronized (clients) {
             for (ClientHandler client : clients) {
                 if (client.getUserID() == userID)
@@ -113,7 +86,7 @@ public class SocketController implements Runnable{
         clients.remove(clt);
     }
 
-    public boolean isUserOnline(int userID){
+    public boolean isUserOnline(long userID){
         synchronized (clients) {
             for (ClientHandler ch : clients) {
                 if (ch.getUserID() == userID)

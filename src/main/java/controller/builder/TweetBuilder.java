@@ -1,7 +1,10 @@
 package controller.builder;
 
+import main.Main;
 import model.Tweet;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 
 public class TweetBuilder {
@@ -22,6 +25,16 @@ public class TweetBuilder {
     }
 
     private long findLastTweetID(){
+        String query = "select max(\"tweetID\") from \"Tweet\"";
+        ResultSet rs = Main.getMainController().getDbCommunicator().executeQuery(query);
+        try {
+            rs.next();
+            long lastTweetID = rs.getLong(1);
+            rs.close();
+            return lastTweetID;
+        } catch (SQLException e) {
+            //e.printStackTrace();
+        }
         return 0;
     }
 

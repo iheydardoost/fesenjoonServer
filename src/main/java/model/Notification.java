@@ -1,7 +1,5 @@
 package model;
 
-import java.time.LocalDateTime;
-
 public class Notification extends Message{
     private boolean seen;
     public NOTIFICATION_CONTEX notifContex;
