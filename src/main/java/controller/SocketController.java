@@ -13,12 +13,15 @@ import java.util.Random;
 public class SocketController implements Runnable{
     private ServerSocket serverSocket;
     private ServerSocketConfig serverSocketConfig;
-    private final LoopHandler loopHandler;
+    private LoopHandler loopHandler;
     private final LinkedList<ClientHandler> clients;
     private static final Random random = new Random();
 
     public SocketController() {
         clients = new LinkedList<>();
+    }
+
+    public void initConnection(){
         serverSocketConfig = Main.getMainController().getConfigLoader().getServerSocketConfig();
         try {
             this.serverSocket =

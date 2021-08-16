@@ -10,6 +10,8 @@ public class Main {
     public static void main(String[] args) {
         initialize();
         mainController = new MainController();
+        mainController.getDbCommunicator().initDBCommunicator();
+        mainController.getSocketController().initConnection();
     }
 
     private static void initialize(){

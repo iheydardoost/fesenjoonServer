@@ -147,11 +147,12 @@ public class AuthenticationController {
     }
 
     public void handleLogIn(Packet rp){
+//        System.out.println("in handle login");
         String[] bodyArgs = rp.getBody().split(",");
         String userName = bodyArgs[0];
         int passwordHash = bodyArgs[1].hashCode();
         /**********************************************/
-        String query = "select u from \"User\" u where u.\"userName\" = '" + userName + "'";
+        String query = "select * from \"User\" u where u.\"userName\" = '" + userName + "'";
         ResultSet rs = Main.getMainController().getDbCommunicator().executeQuery(query);
         boolean userExisted = false;
         try {
@@ -164,6 +165,7 @@ public class AuthenticationController {
         long userID = 0;
         try {
             if(userExisted){
+//                System.out.println("user existed");
                 userID = rs.getLong("userID");
                 if(socketController.isUserOnline(userID)){
                     socketController.getClient(rp.getClientID())
@@ -198,6 +200,7 @@ public class AuthenticationController {
         /**********************************************/
         try {
             int dbPasswordHash = rs.getInt("passwordHash");
+//            System.out.println(dbPasswordHash);
             if(dbPasswordHash == passwordHash){
                 int newAuthToken = SECURE_RANDOM.nextInt();
                 socketController.getClient(rp.getClientID()).setAuthToken(newAuthToken);
@@ -213,6 +216,7 @@ public class AuthenticationController {
                 LogHandler.logger.info("userID:" + userID + " logged in successfully");
             }
             else{
+//                System.out.println("pass incorrect");
                 socketController.getClient(rp.getClientID())
                         .addResponse(
                                 new Packet(PacketType.LOG_IN_RES,
@@ -226,6 +230,7 @@ public class AuthenticationController {
             rs.close();
         } catch (SQLException e) {
             //e.printStackTrace();
+            LogHandler.logger.error("could not get result from DB");
         }
     }
 }

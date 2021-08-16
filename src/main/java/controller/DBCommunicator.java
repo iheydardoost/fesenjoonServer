@@ -12,6 +12,9 @@ public class DBCommunicator{
     private boolean connected;
 
     public DBCommunicator() {
+    }
+
+    public void initDBCommunicator(){
         this.dbConnectionConfig = Main.getMainController().getConfigLoader().getDBConnectionConfig();
         connectDB();
     }
