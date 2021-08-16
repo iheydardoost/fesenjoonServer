@@ -20,12 +20,17 @@ public class AuthenticationController {
     }
 
     public void handleSignUp(Packet rp){
-        String[] bodyArgs = rp.getBody().split(",");
+        String[] bodyArgs = rp.getBody().split(",",-1);
+        for (int i = 0; i < bodyArgs.length; i++) {
+            System.out.println(i + ": " + bodyArgs[i]);
+        }
         String firstName = bodyArgs[0];
         String lastName = bodyArgs[1];
         String userName = bodyArgs[2];
         String password = bodyArgs[3];
-        LocalDate birthDate = LocalDate.parse(bodyArgs[4]);
+        LocalDate birthDate = null;
+        if(!bodyArgs[4].equals("null"))
+            birthDate = LocalDate.parse(bodyArgs[4]);
         String email = bodyArgs[5];
         String phoneNumber = bodyArgs[6];
         String bio = bodyArgs[7];
@@ -61,6 +66,7 @@ public class AuthenticationController {
                                     rp.getClientID(),
                                     rp.getRequestID())
                     );
+            return;
         }
         else if(count2 != 0){
             socketController.getClient(rp.getClientID())
@@ -72,6 +78,7 @@ public class AuthenticationController {
                                     rp.getClientID(),
                                     rp.getRequestID())
                     );
+            return;
         }
         /**********************************************/
         User user =
@@ -107,16 +114,19 @@ public class AuthenticationController {
                 + "'" + user.getFirstName() + "'" + ","
                 + "'" + user.getLastName() + "'" + ","
                 + "'" + user.getUserName() + "'" + ","
-                + user.getPasswordHash() + ","
-                + "'" + user.getDateOfBirth() + "'" + ","
-                + "'" + user.getEmail() + "'" + ","
+                + user.getPasswordHash() + ",";
+        if(user.getDateOfBirth()==null)
+            query += (user.getDateOfBirth() + ",");
+        else
+            query += ("'" + user.getDateOfBirth() + "'" + ",");
+        query += ( "'" + user.getEmail() + "'" + ","
                 + "'" + user.getPhoneNumber() + "'" + ","
                 + "'" + user.getBio() + "'" + ","
                 + user.getLastSeenStatus().ordinal() + ","
                 + "'" + user.getLastSeen() + "'" + ","
                 + user.isAccountPrivate() + ","
                 + user.isAccountActive()
-                + ")";
+                + ")");
         int updatedRowsNum = Main.getMainController().getDbCommunicator().executeUpdate(query);
         if(updatedRowsNum==1){
             int newAuthToken = SECURE_RANDOM.nextInt();

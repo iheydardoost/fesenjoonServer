@@ -31,7 +31,7 @@ public class PacketHandler {
             myAuthTokenAvailable = false;
         }
         /**************************************************/
-        PacketType myPacketType = parsePacketType(args[2]);
+        PacketType myPacketType = PacketType.valueOf(args[2]);
         /**************************************************/
         String myBody = "";
         for(int i=3;i<args.length;i++){
@@ -41,18 +41,5 @@ public class PacketHandler {
             }
         }
         return new Packet(myPacketType,myBody,myAuthToken,myAuthTokenAvailable,clientID,myRequestID);
-    }
-
-    private PacketType parsePacketType(String str){
-        if(str.equals(PacketType.SIGN_UP_REQ.toString()))
-            return PacketType.SIGN_UP_REQ;
-        else if(str.equals(PacketType.SIGN_IP_RES.toString()))
-            return PacketType.SIGN_IP_RES;
-        else if(str.equals(PacketType.LOG_IN_REQ.toString()))
-            return PacketType.LOG_IN_REQ;
-        else if(str.equals(PacketType.LOG_IN_RES.toString()))
-            return PacketType.LOG_IN_RES;
-        else
-            return null;
     }
 }
