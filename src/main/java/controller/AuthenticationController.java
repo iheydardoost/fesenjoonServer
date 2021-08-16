@@ -21,9 +21,9 @@ public class AuthenticationController {
 
     public void handleSignUp(Packet rp){
         String[] bodyArgs = rp.getBody().split(",",-1);
-        for (int i = 0; i < bodyArgs.length; i++) {
-            System.out.println(i + ": " + bodyArgs[i]);
-        }
+//        for (int i = 0; i < bodyArgs.length; i++) {
+//            System.out.println(i + ": " + bodyArgs[i]);
+//        }
         String firstName = bodyArgs[0];
         String lastName = bodyArgs[1];
         String userName = bodyArgs[2];

@@ -46,7 +46,7 @@ public class SettingController {
     }
 
     public void handleChangeSettingReq(Packet rp){
-        String[] bodyArgs = rp.getBody().split(",");
+        String[] bodyArgs = rp.getBody().split(",",-1);
         String variable = bodyArgs[0];
         String value = bodyArgs[1];
 
@@ -106,11 +106,12 @@ public class SettingController {
     }
 
     public void handleDeleteUserReq(Packet rp){
-        String query = "";
-        int deletedRowsNum = Main.getMainController().getDbCommunicator().executeUpdate(query);
-
         SocketController socketController = Main.getMainController().getSocketController();
         long userID = socketController.getClient(rp.getClientID()).getUserID();
+
+        String query = "delete from \"User\" where \"userID\" = " + userID;
+        int deletedRowsNum = Main.getMainController().getDbCommunicator().executeUpdate(query);
+
         if(deletedRowsNum==1){
             socketController.getClient(rp.getClientID())
                     .addResponse(
@@ -148,7 +149,7 @@ public class SettingController {
         socketController.getClient(rp.getClientID())
                 .addResponse(
                         new Packet(PacketType.LOG_OUT_RES,
-                                "success,logged out successfully",
+                                "success",
                                 rp.getAuthToken(),
                                 true,
                                 rp.getClientID(),
