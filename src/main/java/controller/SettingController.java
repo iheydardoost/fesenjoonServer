@@ -45,7 +45,7 @@ public class SettingController {
         }
     }
 
-    public void handleChangeSetting(Packet rp){
+    public void handleChangeSettingReq(Packet rp){
         String[] bodyArgs = rp.getBody().split(",");
         String variable = bodyArgs[0];
         String value = bodyArgs[1];
@@ -103,10 +103,9 @@ public class SettingController {
                                     rp.getRequestID())
                     );
         }
-        handleSettingInfoReq(rp);
     }
 
-    public void handleDeleteUser(Packet rp){
+    public void handleDeleteUserReq(Packet rp){
         String query = "";
         int deletedRowsNum = Main.getMainController().getDbCommunicator().executeUpdate(query);
 
@@ -140,7 +139,7 @@ public class SettingController {
         }
     }
 
-    public void handleLogout(Packet rp){
+    public void handleLogoutReq(Packet rp){
         SocketController socketController = Main.getMainController().getSocketController();
         socketController.getClient(rp.getClientID())
                 .setAuthToken(-1)

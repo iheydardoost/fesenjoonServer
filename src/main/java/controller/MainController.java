@@ -1,6 +1,5 @@
 package controller;
 
-import main.LoopHandler;
 import model.Packet;
 
 public class MainController {
@@ -43,13 +42,13 @@ public class MainController {
                 settingController.handleSettingInfoReq(rp);
                 break;
             case CHANGE_SETTING_REQ:
-                settingController.handleChangeSetting(rp);
+                settingController.handleChangeSettingReq(rp);
                 break;
             case DELETE_USER_REQ:
-                settingController.handleDeleteUser(rp);
+                settingController.handleDeleteUserReq(rp);
                 break;
             case LOG_OUT_REQ:
-                settingController.handleLogout(rp);
+                settingController.handleLogoutReq(rp);
                 break;
             default:
                 break;
