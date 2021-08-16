@@ -102,10 +102,6 @@ public class ClientHandler implements Runnable{
         return authToken;
     }
 
-    public void setAuthToken(int authToken){
-        this.authToken = authToken;
-    }
-
     public int getClientID() {
         return clientID;
     }
@@ -114,7 +110,13 @@ public class ClientHandler implements Runnable{
         return userID;
     }
 
-    public void setUserID(long userID) {
+    public ClientHandler setUserID(long userID) {
         this.userID = userID;
+        return this;
+    }
+
+    public ClientHandler setAuthToken(int authToken){
+        this.authToken = authToken;
+        return this;
     }
 }

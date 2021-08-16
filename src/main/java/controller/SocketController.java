@@ -26,6 +26,9 @@ public class SocketController implements Runnable{
         try {
             this.serverSocket =
                     new ServerSocket(serverSocketConfig.getPort(),50, serverSocketConfig.getIpAddress());
+            LogHandler.logger.info("server socket started on address "
+                    + serverSocketConfig.getIpAddress().getHostAddress()
+                    + " and port " + serverSocketConfig.getPort());
         } catch (IOException e){
             //e.printStackTrace();
             LogHandler.logger.error("could not run Server on address "

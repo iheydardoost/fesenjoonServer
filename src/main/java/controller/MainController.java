@@ -8,11 +8,13 @@ public class MainController {
     private ConfigLoader configLoader;
     private DBCommunicator dbCommunicator;
     private AuthenticationController authenticationController;
+    private SettingController settingController;
 
     public MainController() {
         configLoader = new ConfigLoader();
         dbCommunicator = new DBCommunicator();
         authenticationController = new AuthenticationController();
+        settingController = new SettingController();
 
         socketController = new SocketController();
     }
@@ -36,6 +38,15 @@ public class MainController {
                 break;
             case LOG_IN_REQ:
                 authenticationController.handleLogIn(rp);
+                break;
+            case CHANGE_SETTING_REQ:
+                settingController.handleChangeSetting(rp);
+                break;
+            case DELETE_USER_REQ:
+                settingController.handleDeleteUser(rp);
+                break;
+            case LOG_OUT_REQ:
+                settingController.handleLogout(rp);
                 break;
             default:
                 break;

@@ -130,7 +130,9 @@ public class AuthenticationController {
         int updatedRowsNum = Main.getMainController().getDbCommunicator().executeUpdate(query);
         if(updatedRowsNum==1){
             int newAuthToken = SECURE_RANDOM.nextInt();
-            socketController.getClient(rp.getClientID()).setAuthToken(newAuthToken);
+            socketController.getClient(rp.getClientID())
+                    .setAuthToken(newAuthToken)
+                    .setUserID(user.getUserID());
             socketController.getClient(rp.getClientID())
                     .addResponse(
                             new Packet(PacketType.SIGN_IP_RES,
@@ -213,7 +215,9 @@ public class AuthenticationController {
 //            System.out.println(dbPasswordHash);
             if(dbPasswordHash == passwordHash){
                 int newAuthToken = SECURE_RANDOM.nextInt();
-                socketController.getClient(rp.getClientID()).setAuthToken(newAuthToken);
+                socketController.getClient(rp.getClientID())
+                        .setAuthToken(newAuthToken)
+                        .setUserID(userID);
                 socketController.getClient(rp.getClientID())
                         .addResponse(
                                 new Packet(PacketType.LOG_IN_RES,
