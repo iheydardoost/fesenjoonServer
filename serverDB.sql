@@ -29,49 +29,53 @@ CREATE TABLE "Tweet" (
   CONSTRAINT "FK_Tweet.userID"
     FOREIGN KEY ("userID")
       REFERENCES "User"("userID")
+      ON DELETE CASCADE
 );
 
 
-CREATE TABLE "like/spam" (
+CREATE TABLE "Like/Spam" (
   "TweetID" bigint ,
   "userID" bigint ,
   "actionType" integer,
-  CONSTRAINT "FK_like/spam.userID"
+  CONSTRAINT "FK_Like/Spam.userID"
     FOREIGN KEY ("userID")
-      REFERENCES "User"("userID"),
-  CONSTRAINT "FK_like/spam.TweetID"
+      REFERENCES "User"("userID")
+      ON DELETE CASCADE,
+  CONSTRAINT "FK_Like/Spam.TweetID"
     FOREIGN KEY ("TweetID")
       REFERENCES "Tweet"("tweetID")
 );
 
-CREATE TABLE "collection" (
+CREATE TABLE "Collection" (
   "ownerID" bigint ,
-  "collectionID" bigint ,
+  "CollectionID" bigint ,
   "memberID" bigint ,
-  CONSTRAINT "FK_collection.ownerID"
+  CONSTRAINT "FK_Collection.ownerID"
     FOREIGN KEY ("ownerID")
       REFERENCES "User"("userID")
+      ON DELETE CASCADE
 );
 
-CREATE TABLE "chat" (
+CREATE TABLE "Chat" (
   "chatID" bigint UNIQUE,
   "chatType" integer,
   PRIMARY KEY ("chatID")
 );
 
-CREATE TABLE "chatMember" (
+CREATE TABLE "ChatMember" (
   "chatID" bigint ,
   "memberID" bigint ,
-  CONSTRAINT "FK_chatMember.chatID"
+  CONSTRAINT "FK_ChatMember.chatID"
     FOREIGN KEY ("chatID")
-      REFERENCES "chat"("chatID"),
-  CONSTRAINT "FK_chatMember.memberID"
+      REFERENCES "Chat"("chatID"),
+  CONSTRAINT "FK_ChatMember.memberID"
     FOREIGN KEY ("memberID")
       REFERENCES "User"("userID")
+      ON DELETE CASCADE
 );
 
 
-CREATE TABLE "message" (
+CREATE TABLE "Message" (
   "userID" bigint ,
   "chatID" bigint ,
   "msgID" bigint UNIQUE,
@@ -81,34 +85,39 @@ CREATE TABLE "message" (
   "forwarded" boolean,
   "msgStatus" integer,
   PRIMARY KEY ("msgID"),
-  CONSTRAINT "FK_message.userID"
+  CONSTRAINT "FK_Message.userID"
     FOREIGN KEY ("userID")
-      REFERENCES "User"("userID"),
-  CONSTRAINT "FK_message.chatID"
+      REFERENCES "User"("userID")
+      ON DELETE CASCADE,
+  CONSTRAINT "FK_Message.chatID"
     FOREIGN KEY ("chatID")
-      REFERENCES "chat"("chatID")
+      REFERENCES "Chat"("chatID")
 );
 
-CREATE TABLE "notifications" (
+CREATE TABLE "Notification" (
   "subjectID" bigint,
   "objectID" bigint,
   "notificationType" integer,
-  CONSTRAINT "FK_notifications.objectID"
+  CONSTRAINT "FK_Notification.objectID"
     FOREIGN KEY ("objectID")
-      REFERENCES "User"("userID"),
-  CONSTRAINT "FK_notifications.subjectID"
+      REFERENCES "User"("userID")
+      ON DELETE CASCADE,
+  CONSTRAINT "FK_Notification.subjectID"
     FOREIGN KEY ("subjectID")
       REFERENCES "User"("userID")
+      ON DELETE CASCADE
 );
 
-CREATE TABLE "relationList" (
+CREATE TABLE "Relation" (
   "subjectID" bigint,
   "objectID" bigint,
   "relationType" integer,
-  CONSTRAINT "FK_relationList.subjectID"
+  CONSTRAINT "FK_Relation.subjectID"
     FOREIGN KEY ("subjectID")
-      REFERENCES "User"("userID"),
-  CONSTRAINT "FK_relationList.objectID"
+      REFERENCES "User"("userID")
+      ON DELETE CASCADE,
+  CONSTRAINT "FK_Relation.objectID"
     FOREIGN KEY ("objectID")
       REFERENCES "User"("userID")
+      ON DELETE CASCADE
 );

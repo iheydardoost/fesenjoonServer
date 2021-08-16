@@ -11,5 +11,7 @@ public enum PacketType {
     DELETE_USER_RES,
     LOG_OUT_REQ,
     LOG_OUT_RES,
+    SETTING_INFO_REQ,
+    SETTING_INFO_RES,
     BYE
 }

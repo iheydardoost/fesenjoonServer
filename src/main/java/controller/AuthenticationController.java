@@ -129,7 +129,7 @@ public class AuthenticationController {
                 + ")");
         int updatedRowsNum = Main.getMainController().getDbCommunicator().executeUpdate(query);
         if(updatedRowsNum==1){
-            int newAuthToken = SECURE_RANDOM.nextInt();
+            int newAuthToken = SECURE_RANDOM.nextInt(Integer.MAX_VALUE);
             socketController.getClient(rp.getClientID())
                     .setAuthToken(newAuthToken)
                     .setUserID(user.getUserID());
@@ -171,6 +171,7 @@ public class AuthenticationController {
             userExisted = rs.next();
         } catch (SQLException e) {
             //e.printStackTrace();
+            LogHandler.logger.error("could not get result from DB");
         }
         /**********************************************/
         SocketController socketController = Main.getMainController().getSocketController();
@@ -208,13 +209,14 @@ public class AuthenticationController {
             }
         } catch (SQLException e) {
             //e.printStackTrace();
+            LogHandler.logger.error("could not get result from DB");
         }
         /**********************************************/
         try {
             int dbPasswordHash = rs.getInt("passwordHash");
 //            System.out.println(dbPasswordHash);
             if(dbPasswordHash == passwordHash){
-                int newAuthToken = SECURE_RANDOM.nextInt();
+                int newAuthToken = SECURE_RANDOM.nextInt(Integer.MAX_VALUE);
                 socketController.getClient(rp.getClientID())
                         .setAuthToken(newAuthToken)
                         .setUserID(userID);

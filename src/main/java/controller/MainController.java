@@ -39,6 +39,9 @@ public class MainController {
             case LOG_IN_REQ:
                 authenticationController.handleLogIn(rp);
                 break;
+            case SETTING_INFO_REQ:
+                settingController.handleSettingInfoReq(rp);
+                break;
             case CHANGE_SETTING_REQ:
                 settingController.handleChangeSetting(rp);
                 break;
