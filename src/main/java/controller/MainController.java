@@ -8,12 +8,21 @@ public class MainController {
     private DBCommunicator dbCommunicator;
     private AuthenticationController authenticationController;
     private SettingController settingController;
+    private TimelineController timelineController;
+    private ExplorerController explorerController;
+    private TweetController tweetController;
+    private RelationController relationController;
+    public static final int REPORTED_NUMBER_LIMIT = 3;
 
     public MainController() {
         configLoader = new ConfigLoader();
         dbCommunicator = new DBCommunicator();
         authenticationController = new AuthenticationController();
         settingController = new SettingController();
+        timelineController = new TimelineController();
+        explorerController = new ExplorerController();
+        tweetController = new TweetController();
+        relationController = new RelationController();
 
         socketController = new SocketController();
     }
@@ -49,6 +58,30 @@ public class MainController {
                 break;
             case LOG_OUT_REQ:
                 settingController.handleLogoutReq(rp);
+                break;
+            case TIMELINE_TWEET_REQ:
+                timelineController.handleTimelineTweetReq(rp);
+                break;
+            case EXPLORER_TWEET_REQ:
+                explorerController.handleExplorerTweetReq(rp);
+                break;
+            case NEW_TWEET_REQ:
+                tweetController.handleNewTweetReq(rp);
+                break;
+            case REPORT_TWEET_REQ:
+                tweetController.handleReportTweetReq(rp);
+                break;
+            case LIKE_TWEET_REQ:
+                tweetController.handleLikeTweetReq(rp);
+                break;
+            case REPORT_USER_REQ:
+                relationController.handleReportUserReq(rp);
+                break;
+            case MUTE_USER_REQ:
+                relationController.handleMuteUserReq(rp);
+                break;
+            case BLOCK_USER_REQ:
+                relationController.handleBlockUserReq(rp);
                 break;
             default:
                 break;

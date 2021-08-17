@@ -43,28 +43,34 @@ public class TweetBuilder {
         return (lastTweetID+1);
     }
 
-    public void setParentTweetID(long parentTweetID) {
+    public TweetBuilder setParentTweetID(long parentTweetID) {
         this.parentTweetID = parentTweetID;
+        return this;
     }
 
-    public void setTweetText(String tweetText) {
+    public TweetBuilder setTweetText(String tweetText) {
         this.tweetText = tweetText;
+        return this;
     }
 
-    public void setTweetDateTime(LocalDateTime tweetDateTime) {
+    public TweetBuilder setTweetDateTime(LocalDateTime tweetDateTime) {
         this.tweetDateTime = tweetDateTime;
+        return this;
     }
 
-    public void setUserID(long userID) {
+    public TweetBuilder setUserID(long userID) {
         this.userID = userID;
+        return this;
     }
 
-    public void setRetweeted(boolean retweeted) {
+    public TweetBuilder setRetweeted(boolean retweeted) {
         this.retweeted = retweeted;
+        return this;
     }
 
-    public void setTweetImage(byte[] tweetImage) {
+    public TweetBuilder setTweetImage(byte[] tweetImage) {
         this.tweetImage = tweetImage;
+        return this;
     }
 
     public Tweet build(){

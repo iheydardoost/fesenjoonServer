@@ -21,9 +21,9 @@ public class AuthenticationController {
 
     public void handleSignUp(Packet rp){
         String[] bodyArgs = rp.getBody().split(",",-1);
-        for (int i = 0; i < bodyArgs.length; i++) {
-            System.out.println(i + ": " + bodyArgs[i]);
-        }
+//        for (int i = 0; i < bodyArgs.length; i++) {
+//            System.out.println(i + ": " + bodyArgs[i]);
+//        }
         String firstName = bodyArgs[0];
         String lastName = bodyArgs[1];
         String userName = bodyArgs[2];
@@ -128,6 +128,7 @@ public class AuthenticationController {
                 + user.isAccountActive()
                 + ")");
         int updatedRowsNum = Main.getMainController().getDbCommunicator().executeUpdate(query);
+        /**********************************************/
         if(updatedRowsNum==1){
             int newAuthToken = SECURE_RANDOM.nextInt(Integer.MAX_VALUE);
             socketController.getClient(rp.getClientID())
@@ -160,7 +161,7 @@ public class AuthenticationController {
 
     public void handleLogIn(Packet rp){
 //        System.out.println("in handle login");
-        String[] bodyArgs = rp.getBody().split(",");
+        String[] bodyArgs = rp.getBody().split(",",-1);
         String userName = bodyArgs[0];
         int passwordHash = bodyArgs[1].hashCode();
         /**********************************************/
