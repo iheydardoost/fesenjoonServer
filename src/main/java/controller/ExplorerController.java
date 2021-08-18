@@ -48,6 +48,8 @@ public class ExplorerController {
         query += (" and t.\"userID\" = u.\"userID\" "
                 + "order by t.\"tweetDateTime\" desc "
                 + "limit " + maxNum);
+
+
         ResultSet rs = Main.getMainController().getDbCommunicator().executeQuery(query);
         /***************************************************************************************/
         try {
@@ -56,6 +58,7 @@ public class ExplorerController {
             int likedNum=0, commentNum=0;
             boolean youLiked = false;
             ResultSet rs1 = null;
+
             while(rs.next()){
                 query = "select count(*) from \"Like/Spam\""
                         + " where \"tweetID\" = " + rs.getLong("tweetID")
@@ -81,17 +84,25 @@ public class ExplorerController {
                 else
                     youLiked = false;
                 /************************************/
+                String tweetImageStr = "", userImageStr = "";
+                byte[] tweetImage = rs.getBytes("tweetImage");
+                byte[] userImage = rs.getBytes("userImage");
+                if(tweetImage!=null)
+                    tweetImageStr = Base64.getEncoder().encodeToString(tweetImage);
+                if(userImage!=null)
+                    userImageStr = Base64.getEncoder().encodeToString(userImage);
+
                 body = rs.getString("tweetText") + ","
-                        + rs.getTimestamp("tweetDateTime") + ","
+                        + rs.getTimestamp("tweetDateTime").toLocalDateTime().toString() + ","
                         + rs.getLong("userID") + ","
                         + rs.getLong("tweetID") + ","
                         + rs.getBoolean("retweeted") + ","
                         + youLiked + ","
-                        + Base64.getEncoder().encodeToString(rs.getBytes("tweetImage")) + ","
+                        + tweetImageStr + ","
                         + rs.getString("userName") + ","
                         + rs.getString("firstName") + ","
                         + rs.getString("lastName") + ","
-                        + Base64.getEncoder().encodeToString(rs.getBytes("userImage")) + ","
+                        + userImageStr + ","
                         + likedNum + ","
                         + commentNum;
                 clt.addResponse(

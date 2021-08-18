@@ -71,7 +71,7 @@ public class TweetController {
             socketController.getClient(rp.getClientID())
                     .addResponse(
                             new Packet(PacketType.NEW_TWEET_RES,
-                                    "success",
+                                    "success," + tweet.isRetweeted(),
                                     rp.getAuthToken(),
                                     true,
                                     rp.getClientID(),
@@ -83,7 +83,7 @@ public class TweetController {
             socketController.getClient(rp.getClientID())
                     .addResponse(
                             new Packet(PacketType.NEW_TWEET_RES,
-                                    "error",
+                                    "error," + tweet.isRetweeted(),
                                     rp.getAuthToken(),
                                     true,
                                     rp.getClientID(),
@@ -196,7 +196,7 @@ public class TweetController {
                 socketController.getClient(rp.getClientID())
                         .addResponse(
                                 new Packet(PacketType.LIKE_TWEET_RES,
-                                        "success,like",
+                                        "success,true",
                                         rp.getAuthToken(),
                                         true,
                                         rp.getClientID(),
@@ -208,7 +208,7 @@ public class TweetController {
                 socketController.getClient(rp.getClientID())
                         .addResponse(
                                 new Packet(PacketType.LIKE_TWEET_RES,
-                                        "error,like",
+                                        "error,false",
                                         rp.getAuthToken(),
                                         true,
                                         rp.getClientID(),
@@ -227,7 +227,7 @@ public class TweetController {
                 socketController.getClient(rp.getClientID())
                         .addResponse(
                                 new Packet(PacketType.LIKE_TWEET_RES,
-                                        "success,dislike",
+                                        "success,false",
                                         rp.getAuthToken(),
                                         true,
                                         rp.getClientID(),
@@ -239,7 +239,7 @@ public class TweetController {
                 socketController.getClient(rp.getClientID())
                         .addResponse(
                                 new Packet(PacketType.LIKE_TWEET_RES,
-                                        "error,dislike",
+                                        "error,true",
                                         rp.getAuthToken(),
                                         true,
                                         rp.getClientID(),

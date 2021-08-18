@@ -41,8 +41,8 @@ CREATE TABLE "Like/Spam" (
     FOREIGN KEY ("userID")
       REFERENCES "User"("userID")
       ON DELETE CASCADE,
-  CONSTRAINT "FK_Like/Spam.TweetID"
-    FOREIGN KEY ("TweetID")
+  CONSTRAINT "FK_Like/Spam.tweetID"
+    FOREIGN KEY ("tweetID")
       REFERENCES "Tweet"("tweetID")
 );
 
