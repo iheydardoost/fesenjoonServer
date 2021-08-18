@@ -7,6 +7,7 @@ import model.PacketType;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 
 public class SettingController {
 
@@ -50,59 +51,46 @@ public class SettingController {
         String variable = bodyArgs[0];
         String value = bodyArgs[1];
 
-        String query = "";
         int updatedRowsNum = 0;
         SocketController socketController = Main.getMainController().getSocketController();
         long userID = socketController.getClient(rp.getClientID()).getUserID();
+        String query = "";
         if(variable.equals("accountPrivate")) {
             query = "update \"User\" set \"accountPrivate\" = "
-                    + value
-                    + " where \"userID\" = "
-                    + userID;
+                    + value;
         }
         else if(variable.equals("accountActive")){
             query = "update \"User\" set \"accountActive\" = "
-                    + value
-                    + " where \"userID\" = "
-                    + userID;
+                    + value;
         }
         else if(variable.equals("lastSeenStatus")){
             query = "update \"User\" set \"lastSeenStatus\" = "
-                    + LastSeenStatus.valueOf(value).ordinal()
-                    + " where \"userID\" = "
-                    + userID;
+                    + LastSeenStatus.valueOf(value).ordinal();
         }
         else if(variable.equals("password")){
             query = "update \"User\" set \"passwordHash\" = "
-                    + value.hashCode()
-                    + " where \"userID\" = "
-                    + userID;
+                    + value.hashCode();
         }
+        query += " where \"userID\" = " + userID;
         updatedRowsNum = Main.getMainController().getDbCommunicator().executeUpdate(query);
 
+        String body = "";
         if(updatedRowsNum==1){
-            socketController.getClient(rp.getClientID())
-                    .addResponse(
-                            new Packet(PacketType.CHANGE_SETTING_RES,
-                                    "success," + variable,
-                                    rp.getAuthToken(),
-                                    true,
-                                    rp.getClientID(),
-                                    rp.getRequestID())
-                    );
+            body = "success," + variable;
             LogHandler.logger.info(variable + " changed to " + value + " (userID: " + userID + ")");
         }
         else if(updatedRowsNum==0){
-            socketController.getClient(rp.getClientID())
-                    .addResponse(
-                            new Packet(PacketType.CHANGE_SETTING_RES,
-                                    "error," + variable,
-                                    rp.getAuthToken(),
-                                    true,
-                                    rp.getClientID(),
-                                    rp.getRequestID())
-                    );
+            body = "error," + variable;
         }
+        socketController.getClient(rp.getClientID())
+                .addResponse(
+                        new Packet(PacketType.CHANGE_SETTING_RES,
+                                body,
+                                rp.getAuthToken(),
+                                true,
+                                rp.getClientID(),
+                                rp.getRequestID())
+                );
     }
 
     public void handleDeleteUserReq(Packet rp){
@@ -112,32 +100,26 @@ public class SettingController {
         String query = "delete from \"User\" where \"userID\" = " + userID;
         int deletedRowsNum = Main.getMainController().getDbCommunicator().executeUpdate(query);
 
+        String body = "";
         if(deletedRowsNum==1){
-            socketController.getClient(rp.getClientID())
-                    .addResponse(
-                            new Packet(PacketType.DELETE_USER_RES,
-                                    "success",
-                                    rp.getAuthToken(),
-                                    true,
-                                    rp.getClientID(),
-                                    rp.getRequestID())
-                    );
+            body = "success";
             socketController.getClient(rp.getClientID())
                     .setAuthToken(-1)
                     .setUserID(0);
             LogHandler.logger.info("user (userID: " + userID + ") deleted");
         }
         else if(deletedRowsNum==0){
-            socketController.getClient(rp.getClientID())
-                    .addResponse(
-                            new Packet(PacketType.DELETE_USER_RES,
-                                    "error",
-                                    rp.getAuthToken(),
-                                    true,
-                                    rp.getClientID(),
-                                    rp.getRequestID())
-                    );
+            body = "error";
         }
+        socketController.getClient(rp.getClientID())
+                .addResponse(
+                        new Packet(PacketType.DELETE_USER_RES,
+                                body,
+                                rp.getAuthToken(),
+                                true,
+                                rp.getClientID(),
+                                rp.getRequestID())
+                );
     }
 
     public void handleLogoutReq(Packet rp){
@@ -159,5 +141,15 @@ public class SettingController {
                 "userID:"
                 + socketController.getClient(rp.getClientID()).getUserID()
                         + " logged out");
+    }
+
+    public static void updateLastSeen(Packet rp){
+        SocketController socketController = Main.getMainController().getSocketController();
+        long userID = socketController.getClient(rp.getClientID()).getUserID();
+
+        String query = "update \"User\" set \"lastSeen\" = "
+                + "'" + LocalDate.now() + "'"
+                + " where \"userID\" = " + userID;
+        Main.getMainController().getDbCommunicator().executeUpdate(query);
     }
 }

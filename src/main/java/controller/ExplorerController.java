@@ -52,71 +52,43 @@ public class ExplorerController {
 
         ResultSet rs = Main.getMainController().getDbCommunicator().executeQuery(query);
         /***************************************************************************************/
+        TweetController.sendTweetList(rs,rp,PacketType.EXPLORER_TWEET_RES);
+    }
+
+    public void handleSearchUsernameReq(Packet rp){
+        SocketController socketController = Main.getMainController().getSocketController();
+        long subjectID = socketController.getClient(rp.getClientID()).getUserID();
+        String userName = rp.getBody();
+
+        String query = "select * from \"User\" u"
+                + " where u.\"userName\" = " + userName
+                + " and u.\"accountActive\" = true";
+        ResultSet rs = Main.getMainController().getDbCommunicator().executeQuery(query);
+
+        ClientHandler clt = socketController.getClient(rp.getClientID());
         try {
-            ClientHandler clt = socketController.getClient(rp.getClientID());
-            String body = "";
-            int likedNum=0, commentNum=0;
-            boolean youLiked = false;
-            ResultSet rs1 = null;
-
-            while(rs.next()){
-                query = "select count(*) from \"Like/Spam\""
-                        + " where \"tweetID\" = " + rs.getLong("tweetID")
-                        + " and \"actionType\" = " + ActionType.LIKE.ordinal();
-                rs1 = Main.getMainController().getDbCommunicator().executeQuery(query);
-                rs1.next();
-                likedNum = rs1.getInt("count");
-
-                query = "select count(*) from \"Tweet\""
-                        + " where \"parentTweetID\" = " + rs.getLong("tweetID");
-                rs1 = Main.getMainController().getDbCommunicator().executeQuery(query);
-                rs1.next();
-                commentNum = rs1.getInt("count");
-
-                query = "select count(*) from \"Like/Spam\""
-                        + " where \"tweetID\" = " + rs.getLong("tweetID")
-                        + " and \"userID\" = " + userID
-                        + " and \"actionType\" = " + ActionType.LIKE.ordinal();
-                rs1 = Main.getMainController().getDbCommunicator().executeQuery(query);
-                rs1.next();
-                if(rs1.getInt("count")!=0)
-                    youLiked = true;
-                else
-                    youLiked = false;
-                /************************************/
-                String tweetImageStr = "", userImageStr = "";
-                byte[] tweetImage = rs.getBytes("tweetImage");
-                byte[] userImage = rs.getBytes("userImage");
-                if(tweetImage!=null)
-                    tweetImageStr = Base64.getEncoder().encodeToString(tweetImage);
-                if(userImage!=null)
-                    userImageStr = Base64.getEncoder().encodeToString(userImage);
-
-                body = rs.getString("tweetText") + ","
-                        + rs.getTimestamp("tweetDateTime").toLocalDateTime().toString() + ","
-                        + rs.getLong("userID") + ","
-                        + rs.getLong("tweetID") + ","
-                        + rs.getBoolean("retweeted") + ","
-                        + youLiked + ","
-                        + tweetImageStr + ","
-                        + rs.getString("userName") + ","
-                        + rs.getString("firstName") + ","
-                        + rs.getString("lastName") + ","
-                        + userImageStr + ","
-                        + likedNum + ","
-                        + commentNum;
+            if(rs.next()){
                 clt.addResponse(
-                        new Packet(PacketType.EXPLORER_TWEET_RES,
-                                body,
+                        new Packet(PacketType.GET_USER_INFO_RES,
+                                "found," + rs.getLong("userID"),
                                 clt.getAuthToken(),
                                 true,
                                 rp.getClientID(),
                                 rp.getRequestID())
                 );
+                return;
             }
         } catch (SQLException e) {
             //e.printStackTrace();
             LogHandler.logger.error("could not get result from DB");
         }
+        clt.addResponse(
+                new Packet(PacketType.SEARCH_USERNAME_RES,
+                        "not found,0",
+                        clt.getAuthToken(),
+                        true,
+                        rp.getClientID(),
+                        rp.getRequestID())
+        );
     }
 }

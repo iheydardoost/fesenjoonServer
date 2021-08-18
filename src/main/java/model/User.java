@@ -13,7 +13,7 @@ public class User {
     private String email;
     private String phoneNumber;
     private String bio;
-    private LocalDateTime lastSeen;
+    private LocalDate lastSeen;
     private LastSeenStatus lastSeenStatus;
     private boolean accountPrivate;
     private boolean accountActive;
@@ -25,7 +25,7 @@ public class User {
     public User(long userID, String userName, String firstName,
                 String lastName, int passwordHash, LocalDate dateOfBirth,
                 String email, String phoneNumber, String bio,
-                LocalDateTime lastSeen, LastSeenStatus lastSeenStatus,
+                LocalDate lastSeen, LastSeenStatus lastSeenStatus,
                 boolean accountPrivate, boolean accountActive, byte[] userImage) {
         this.userID = userID;
         this.userName = userName;
@@ -115,11 +115,11 @@ public class User {
         this.bio = bio;
     }
 
-    public LocalDateTime getLastSeen() {
+    public LocalDate getLastSeen() {
         return lastSeen;
     }
 
-    public void setLastSeen(LocalDateTime lastSeen) {
+    public void setLastSeen(LocalDate lastSeen) {
         this.lastSeen = lastSeen;
     }
 

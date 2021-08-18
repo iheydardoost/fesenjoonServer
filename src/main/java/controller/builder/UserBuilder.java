@@ -93,7 +93,7 @@ public class UserBuilder {
         User user = new User(generateNewUserID(), this.userName, this.firstName,
                 this.lastName, this.passwordHash, this.dateOfBirth,
                 this.email, this.phoneNumber, this.bio,
-                LocalDateTime.now(), LastSeenStatus.EVERYONE,
+                LocalDate.now(), LastSeenStatus.FOLLOWINGS,
                 false, true, null);
 
         this.userName = null;

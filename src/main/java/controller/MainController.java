@@ -80,8 +80,20 @@ public class MainController {
             case MUTE_USER_REQ:
                 relationController.handleMuteUserReq(rp);
                 break;
+            case UNMUTE_USER_REQ:
+                relationController.handleUnmuteUserReq(rp);
+                break;
             case BLOCK_USER_REQ:
                 relationController.handleBlockUserReq(rp);
+                break;
+            case UNBLOCK_USER_REQ:
+                relationController.handleUnblockUserReq(rp);
+                break;
+            case GET_TWEET_REQ:
+                tweetController.handleGetTweetReq(rp);
+                break;
+            case GET_COMMENTS_REQ:
+                tweetController.handleGetCommentsReq(rp);
                 break;
             default:
                 break;

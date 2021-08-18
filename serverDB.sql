@@ -9,7 +9,7 @@ CREATE TABLE "User" (
   "phoneNumber" text,
   "bio" text,
   "lastSeenStatus" integer,
-  "lastSeen" timestamp,
+  "lastSeen" date,
   "accountPrivate" boolean,
   "accountActive" boolean,
   "userImage" bytea,
