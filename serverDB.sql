@@ -34,7 +34,7 @@ CREATE TABLE "Tweet" (
 
 
 CREATE TABLE "Like/Spam" (
-  "TweetID" bigint ,
+  "tweetID" bigint ,
   "userID" bigint ,
   "actionType" integer,
   CONSTRAINT "FK_Like/Spam.userID"
@@ -48,7 +48,7 @@ CREATE TABLE "Like/Spam" (
 
 CREATE TABLE "Collection" (
   "ownerID" bigint ,
-  "CollectionID" bigint ,
+  "collectionID" bigint ,
   "memberID" bigint ,
   CONSTRAINT "FK_Collection.ownerID"
     FOREIGN KEY ("ownerID")

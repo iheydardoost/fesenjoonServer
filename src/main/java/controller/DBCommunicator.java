@@ -3,9 +3,10 @@ package controller;
 import main.Main;
 import model.config.DBConnectionConfig;
 
+import java.io.ByteArrayInputStream;
 import java.sql.*;
 
-public class DBCommunicator{
+public class DBCommunicator {
     private Connection connection;
     private final Object CONNECTION_LOCK = new Object();
     private DBConnectionConfig dbConnectionConfig;
@@ -14,12 +15,12 @@ public class DBCommunicator{
     public DBCommunicator() {
     }
 
-    public void initDBCommunicator(){
+    public void initDBCommunicator() {
         this.dbConnectionConfig = Main.getMainController().getConfigLoader().getDBConnectionConfig();
         connectDB();
     }
 
-    public boolean connectDB(){
+    public boolean connectDB() {
         synchronized (CONNECTION_LOCK) {
             try {
                 this.connection =
@@ -39,8 +40,8 @@ public class DBCommunicator{
         return connected;
     }
 
-    public ResultSet executeQuery(String query){
-        if(connected && connection!=null) {
+    public ResultSet executeQuery(String query) {
+        if (connected && connection != null) {
             synchronized (CONNECTION_LOCK) {
                 try {
                     Statement statement = connection.createStatement();
@@ -56,8 +57,8 @@ public class DBCommunicator{
         return null;
     }
 
-    public boolean execute(String query){
-        if(connected && connection!=null) {
+    public boolean execute(String query) {
+        if (connected && connection != null) {
             synchronized (CONNECTION_LOCK) {
                 try {
                     Statement statement = connection.createStatement();
@@ -73,8 +74,8 @@ public class DBCommunicator{
         return false;
     }
 
-    public int executeUpdate(String query){
-        if(connected && connection!=null) {
+    public int executeUpdate(String query) {
+        if (connected && connection != null) {
             synchronized (CONNECTION_LOCK) {
                 try {
                     Statement statement = connection.createStatement();
@@ -90,8 +91,26 @@ public class DBCommunicator{
         return -1;
     }
 
-    public void closeConnection(){
-        if(connected && connection!=null) {
+    public int executeUpdateBytea(String query, byte[] bytes){
+        if (connected && connection != null) {
+            synchronized (CONNECTION_LOCK) {
+                try {
+                    PreparedStatement preparedStatement = connection.prepareStatement(query);
+                    preparedStatement.setBinaryStream(1,new ByteArrayInputStream(bytes),bytes.length);
+                    int result = preparedStatement.executeUpdate();
+                    preparedStatement.close();
+                    return result;
+                } catch (SQLException e) {
+                    //e.printStackTrace();
+                    LogHandler.logger.error("SQLException in executeUpdate: " + e.getMessage());
+                }
+            }
+        }
+        return -1;
+    }
+
+    public void closeConnection() {
+        if (connected && connection != null) {
             synchronized (CONNECTION_LOCK) {
                 try {
                     connection.close();
@@ -104,8 +123,8 @@ public class DBCommunicator{
         }
     }
 
-    public boolean isConnectionValid(){
-        if(connection!=null) {
+    public boolean isConnectionValid() {
+        if (connection != null) {
             synchronized (CONNECTION_LOCK) {
                 try {
                     boolean result = connection.isValid(2);

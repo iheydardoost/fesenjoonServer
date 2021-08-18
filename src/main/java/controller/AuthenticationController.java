@@ -128,6 +128,7 @@ public class AuthenticationController {
                 + user.isAccountActive()
                 + ")");
         int updatedRowsNum = Main.getMainController().getDbCommunicator().executeUpdate(query);
+        /**********************************************/
         if(updatedRowsNum==1){
             int newAuthToken = SECURE_RANDOM.nextInt(Integer.MAX_VALUE);
             socketController.getClient(rp.getClientID())
@@ -160,7 +161,7 @@ public class AuthenticationController {
 
     public void handleLogIn(Packet rp){
 //        System.out.println("in handle login");
-        String[] bodyArgs = rp.getBody().split(",");
+        String[] bodyArgs = rp.getBody().split(",",-1);
         String userName = bodyArgs[0];
         int passwordHash = bodyArgs[1].hashCode();
         /**********************************************/
