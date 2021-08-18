@@ -164,6 +164,89 @@ public class TweetController {
     }
 
     public void handleLikeTweetReq(Packet rp){
+        SocketController socketController = Main.getMainController().getSocketController();
+        long userID = socketController.getClient(rp.getClientID()).getUserID();
+        long tweetID = Long.parseLong(rp.getBody());
 
+        String query = "select count(*) from \"Like/Spam\" where"
+                + " \"tweetID\" = " + tweetID
+                + " and \"userID\" = " + userID
+                + " and \"actionType\" = " + ActionType.LIKE.ordinal();
+        ResultSet rs = Main.getMainController().getDbCommunicator().executeQuery(query);
+        int rowsExisted=0;
+        try {
+            rs.next();
+            rowsExisted = rs.getInt(1);
+        } catch (SQLException e) {
+            //e.printStackTrace();
+        }
+        /************************************************************************/
+        int updatedRowsNum=0;
+        if(rowsExisted==0){
+            query = "insert into \"Like/Spam\" ("
+                    + "\"tweetID\","
+                    + "\"userID\","
+                    + "\"actionType\")"
+                    + " values ("
+                    + tweetID + ","
+                    + userID + ","
+                    + ActionType.LIKE.ordinal() + ")";
+            updatedRowsNum = Main.getMainController().getDbCommunicator().executeUpdate(query);
+            if(updatedRowsNum==1){
+                socketController.getClient(rp.getClientID())
+                        .addResponse(
+                                new Packet(PacketType.LIKE_TWEET_RES,
+                                        "success,like",
+                                        rp.getAuthToken(),
+                                        true,
+                                        rp.getClientID(),
+                                        rp.getRequestID())
+                        );
+                LogHandler.logger.info("Tweet with tweetID:" + tweetID + " liked by userID:" + userID);
+            }
+            else{
+                socketController.getClient(rp.getClientID())
+                        .addResponse(
+                                new Packet(PacketType.LIKE_TWEET_RES,
+                                        "error,like",
+                                        rp.getAuthToken(),
+                                        true,
+                                        rp.getClientID(),
+                                        rp.getRequestID())
+                        );
+                LogHandler.logger.error("could not like Tweet in DB");
+            }
+        }
+        else{
+            query = "delete from \"Like/Spam\""
+                    + " where \"tweetID\" = " + tweetID
+                    + " and \"userID\" = " + userID
+                    + " and \"actionType\" = " + ActionType.LIKE.ordinal();
+            updatedRowsNum = Main.getMainController().getDbCommunicator().executeUpdate(query);
+            if(updatedRowsNum==1){
+                socketController.getClient(rp.getClientID())
+                        .addResponse(
+                                new Packet(PacketType.LIKE_TWEET_RES,
+                                        "success,dislike",
+                                        rp.getAuthToken(),
+                                        true,
+                                        rp.getClientID(),
+                                        rp.getRequestID())
+                        );
+                LogHandler.logger.info("Tweet with tweetID:" + tweetID + " disliked by userID:" + userID);
+            }
+            else{
+                socketController.getClient(rp.getClientID())
+                        .addResponse(
+                                new Packet(PacketType.LIKE_TWEET_RES,
+                                        "error,dislike",
+                                        rp.getAuthToken(),
+                                        true,
+                                        rp.getClientID(),
+                                        rp.getRequestID())
+                        );
+                LogHandler.logger.error("could not dislike Tweet in DB");
+            }
+        }
     }
 }

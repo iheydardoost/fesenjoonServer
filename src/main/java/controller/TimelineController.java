@@ -60,6 +60,7 @@ public class TimelineController {
             ClientHandler clt = socketController.getClient(rp.getClientID());
             String body = "";
             int likedNum=0, commentNum=0;
+            boolean youLiked = false;
             ResultSet rs1 = null;
             while(rs.next()){
                 query = "select count(*) from \"Like/Spam\""
@@ -74,12 +75,24 @@ public class TimelineController {
                 rs1 = Main.getMainController().getDbCommunicator().executeQuery(query);
                 rs1.next();
                 commentNum = rs1.getInt("count");
+
+                query = "select count(*) from \"Like/Spam\""
+                        + " where \"tweetID\" = " + rs.getLong("tweetID")
+                        + " and \"userID\" = " + userID
+                        + " and \"actionType\" = " + ActionType.LIKE.ordinal();
+                rs1 = Main.getMainController().getDbCommunicator().executeQuery(query);
+                rs1.next();
+                if(rs1.getInt("count")!=0)
+                    youLiked = true;
+                else
+                    youLiked = false;
                 /************************************/
                 body = rs.getString("tweetText") + ","
                         + rs.getTimestamp("tweetDateTime") + ","
                         + rs.getLong("userID") + ","
                         + rs.getLong("tweetID") + ","
                         + rs.getBoolean("retweeted") + ","
+                        + youLiked + ","
                         + Base64.getEncoder().encodeToString(rs.getBytes("tweetImage")) + ","
                         + rs.getString("userName") + ","
                         + rs.getString("firstName") + ","
