@@ -76,9 +76,11 @@ public class RelationController {
         String body = "";
         if(insertRelation(subjectID, objectID, RelationType.BLOCK)) {
             deleteRelation(subjectID, objectID, RelationType.FOLLOW);
+            deleteRelation(objectID, subjectID, RelationType.FOLLOW);
             body = "success";
             NotificationController.insertNotification(subjectID,objectID,NotificationType.UNFOLLOWED);
             NotificationController.deleteNotification(objectID,subjectID,NotificationType.FOLLOW_REQUEST);
+            NotificationController.deleteNotification(subjectID,objectID,NotificationType.FOLLOW_REQUEST);
         }
         else {
             body = "error";

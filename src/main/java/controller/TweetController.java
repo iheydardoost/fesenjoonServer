@@ -328,24 +328,10 @@ public class TweetController {
         LocalDateTime lastTweetDateTime = null;
         if(!args[1].isEmpty())
             lastTweetDateTime = LocalDateTime.parse(args[1]);
-        long tweeter = Long.parseLong(args[2]);
         /***************************************************************************************/
-        String subQuery1 = "select * from \"Relation\" rr"
-                + " where rr.\"subjectID\" = " + userID
-                + " and rr.\"objectID\" = t.\"userID\""
-                + " and rr.\"relationType\" = " + RelationType.FOLLOW.ordinal();
-        String subQuery2 = "select * from \"Relation\" rr"
-                + " where rr.\"subjectID\" = " + userID
-                + " and rr.\"objectID\" = t.\"userID\""
-                + " and rr.\"relationType\" = " + RelationType.BLOCK.ordinal();
         String query = "select t.*, u.\"userName\", u.\"firstName\", u.\"lastName\", u.\"userImage\""
                 + " from \"Tweet\" t, \"User\" u"
-                + " where t.\"userID\" = " + tweeter
-                + " and u.\"accountActive\" = true"
-                + " and not exists (" + subQuery2 + ")"
-                + " and (u.\"accountPrivate\" = false"
-                + " or (u.\"accountPrivate\" = true"
-                + " and exists (" + subQuery1 + ")))";
+                + " where t.\"userID\" = " + userID;
         if(lastTweetDateTime !=null) {
             query += (" and t.\"tweetDateTime\" < '"
                     + lastTweetDateTime.toLocalDate().toString()
