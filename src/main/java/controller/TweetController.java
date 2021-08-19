@@ -31,6 +31,19 @@ public class TweetController {
         if(!args[4].isEmpty())
             tweetImage = Base64.getDecoder().decode(args[4]);
         /***********************************************************/
+        String query = "select count(*) from \"Tweet\" where"
+                + " \"userID\" = " + userID
+                + " and \"retweeted\" = true"
+                + " and \"tweetText\" = '" + tweetText + "'";
+        ResultSet rs = Main.getMainController().getDbCommunicator().executeQuery(query);
+        try {
+            rs.next();
+            if(rs.getInt(1)!=0)
+                return;
+        } catch (SQLException e) {
+            //e.printStackTrace();
+        }
+        /***********************************************************/
         Tweet tweet =
                 tweetBuilder.setTweetText(tweetText)
                         .setTweetDateTime(tweetDateTime)
@@ -40,7 +53,7 @@ public class TweetController {
                         .setTweetImage(tweetImage)
                         .build();
 
-        String query = "insert into \"Tweet\""
+        query = "insert into \"Tweet\""
                 + " ("
                 + "\"tweetText\"" + ","
                 + "\"tweetDateTime\"" + ","
@@ -77,9 +90,14 @@ public class TweetController {
             body = "error," + tweet.isRetweeted();
             LogHandler.logger.error("could not create new Tweet in DB");
         }
+        PacketType packetType;
+        if(tweet.isRetweeted())
+            packetType = PacketType.RETWEET_RES;
+        else
+            packetType = PacketType.NEW_TWEET_RES;
         socketController.getClient(rp.getClientID())
                 .addResponse(
-                        new Packet(PacketType.NEW_TWEET_RES,
+                        new Packet(packetType,
                                 body,
                                 rp.getAuthToken(),
                                 true,
@@ -221,7 +239,7 @@ public class TweetController {
                 + " where rr.\"subjectID\" = " + userID
                 + " and rr.\"objectID\" = t.\"userID\""
                 + " and rr.\"relationType\" = " + RelationType.BLOCK.ordinal();
-        String query = "select t.*, u.\"userName\", u.\"firstName\", u.\"lastName\", u.\"userImage\""
+        String query = "select t.*, u.\"userName\", u.\"firstName\", u.\"lastName\", u.\"userImage\", u.\"userID\""
                 + " from \"Tweet\" t, \"User\" u"
                 + " where t.\"tweetID\" = " + tweetID
                 + " and u.\"accountActive\" = true"
@@ -236,12 +254,14 @@ public class TweetController {
             ResultSet rs1;
             int likedNum=0, commentNum=0;
             boolean youLiked = false;
+            boolean isMute = false;
             String body = "";
             ClientHandler clt = socketController.getClient(rp.getClientID());
             if(rs.next()){
                 likedNum = getLikedNum(rs.getLong("tweetID"));
                 commentNum = getCommentNum(rs.getLong("tweetID"));
                 youLiked = getYouLiked(userID,rs.getLong("tweetID"));
+                isMute = getIsMute(userID,rs.getLong("userID"));
                 /************************************/
                 String tweetImageStr = "", userImageStr = "";
                 byte[] tweetImage = rs.getBytes("tweetImage");
@@ -263,7 +283,8 @@ public class TweetController {
                         + rs.getString("lastName") + ","
                         + userImageStr + ","
                         + likedNum + ","
-                        + commentNum;
+                        + commentNum + ","
+                        + isMute;
                 clt.addResponse(
                         new Packet(PacketType.GET_TWEET_RES,
                                 body,
@@ -428,6 +449,24 @@ public class TweetController {
                 + " where \"tweetID\" = " + tweetID
                 + " and \"userID\" = " + userID
                 + " and \"actionType\" = " + ActionType.LIKE.ordinal();
+        ResultSet rs = Main.getMainController().getDbCommunicator().executeQuery(query);
+        try {
+            rs.next();
+            if(rs.getInt("count")!=0)
+                return true;
+            else
+                return false;
+        } catch (SQLException e) {
+            //e.printStackTrace();
+        }
+        return false;
+    }
+
+    public static boolean getIsMute(long subjectID,long objectID){
+        String query = "select count(*) from \"Relation\""
+                + " where \"subjectID\" = " + subjectID
+                + " and \"objectID\" = " + objectID
+                + " and \"relationType\" = " + RelationType.MUTE.ordinal();
         ResultSet rs = Main.getMainController().getDbCommunicator().executeQuery(query);
         try {
             rs.next();

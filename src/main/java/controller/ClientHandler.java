@@ -65,8 +65,8 @@ public class ClientHandler implements Runnable{
                             requests.add(request);
                     }
                     if(request.getPacketType()==PacketType.BYE) {
-                        Main.getMainController().getSocketController().removeClient(this);
                         SettingController.updateLastSeen(request);
+                        Main.getMainController().getSocketController().removeClient(this);
                         this.socket.close();
                         this.loopHandler.pause();
                     }

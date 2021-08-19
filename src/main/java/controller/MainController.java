@@ -135,6 +135,9 @@ public class MainController {
             case GET_PRIVATE_INFO_REQ:
                 privateController.handleGetPrivateInfo(rp);
                 break;
+            case GET_EDIT_INFO_REQ:
+                privateController.handleGetEditInfo(rp);
+                break;
             case FOLLOW_USER_REQ:
                 relationController.handleFollowUserReq(rp);
                 break;

@@ -20,7 +20,17 @@ public class PrivateController {
 
         String[] bodyArgs = rp.getBody().split(",",-1);
         String variable = bodyArgs[0];
-        String value = bodyArgs[1];
+        String value;
+        if(variable.equals("bio")){
+            String bio = bodyArgs[1];
+            for(int i=2; i<bodyArgs.length; i++){
+                bio += ("," + bodyArgs[i]);
+            }
+            value = bio;
+        }
+        else {
+            value = bodyArgs[1];
+        }
         /************************************************************/
         int updatedRowsNum = 0;
         String query = "";
@@ -73,16 +83,60 @@ public class PrivateController {
                 byte[] userImage = rs.getBytes("userImage");
                 if(userImage!=null)
                     userImageStr = Base64.getEncoder().encodeToString(userImage);
+                String dateOfBirth = "";
+                if(rs.getDate("dateOfBirth")!=null)
+                    dateOfBirth = rs.getDate("dateOfBirth").toString();
                 String body = rs.getString("userName") + ","
                         + rs.getString("firstName") + ","
                         + rs.getString("lastName") + ","
-                        + rs.getDate("dateOfBirth").toString() + ","
+                        + dateOfBirth + ","
                         + rs.getString("email") + ","
                         + rs.getString("phoneNumber") + ","
-                        + rs.getString("bio") + ","
-                        + userImageStr;
+                        + userImageStr + ","
+                        + rs.getString("bio");
                 clt.addResponse(
                         new Packet(PacketType.GET_PRIVATE_INFO_RES,
+                                body,
+                                clt.getAuthToken(),
+                                true,
+                                rp.getClientID(),
+                                rp.getRequestID())
+                );
+            }
+        } catch (SQLException e) {
+            //e.printStackTrace();
+            LogHandler.logger.error("could not get result from DB");
+        }
+    }
+
+    public void handleGetEditInfo(Packet rp){
+        SocketController socketController = Main.getMainController().getSocketController();
+        long userID = socketController.getClient(rp.getClientID()).getUserID();
+
+        String query = "select * from \"User\" u"
+                + " where u.\"userID\" = " + userID;
+        ResultSet rs = Main.getMainController().getDbCommunicator().executeQuery(query);
+        /************************************************************/
+        ClientHandler clt = socketController.getClient(rp.getClientID());
+        try {
+            if(rs.next()) {
+                String userImageStr = "";
+                byte[] userImage = rs.getBytes("userImage");
+                if(userImage!=null)
+                    userImageStr = Base64.getEncoder().encodeToString(userImage);
+                String dateOfBirth = "";
+                if(rs.getDate("dateOfBirth")!=null)
+                    dateOfBirth = rs.getDate("dateOfBirth").toString();
+                String body = rs.getString("userName") + ","
+                        + rs.getString("firstName") + ","
+                        + rs.getString("lastName") + ","
+                        + dateOfBirth + ","
+                        + rs.getString("email") + ","
+                        + rs.getString("phoneNumber") + ","
+                        + userImageStr + ","
+                        + rs.getString("bio");
+                clt.addResponse(
+                        new Packet(PacketType.GET_EDIT_INFO_RES,
                                 body,
                                 clt.getAuthToken(),
                                 true,
@@ -110,12 +164,12 @@ public class PrivateController {
         query = "select count(*) from \"Relation\" r"
                 + " where r.\"subjectID\" = " + subjectID
                 + " and r.\"objectID\" = " + objectID
-                + " and r.\"relationType\" = " + RelationType.FOLLOW;
+                + " and r.\"relationType\" = " + RelationType.FOLLOW.ordinal();
         ResultSet rs1 = Main.getMainController().getDbCommunicator().executeQuery(query);
         /************************************************************/
         boolean isFollowing = false;
         String lastSeenStr = "";
-        String dateOfBirth="",email="",phoneNumber="";
+        String dateOfBirthStr="",email="",phoneNumber="";
         try {
             rs1.next();
             if(rs1.getInt(1)!=0)
@@ -144,7 +198,8 @@ public class PrivateController {
                 }
 
                 if(isFollowing){
-                    dateOfBirth = rs.getDate("dateOfBirth").toString();
+                    if(rs.getDate("dateOfBirth")!=null)
+                        dateOfBirthStr = rs.getDate("dateOfBirth").toString();
                     email = rs.getString("email");
                     phoneNumber = rs.getString("phoneNumber");
                 }
@@ -165,31 +220,29 @@ public class PrivateController {
         }
         /************************************************************/
         try {
-            if(rs.next()) {
-                String userImageStr = "";
-                byte[] userImage = rs.getBytes("userImage");
-                if(userImage!=null)
-                    userImageStr = Base64.getEncoder().encodeToString(userImage);
-                String body = "success,"
-                        + rs.getString("userName") + ","
-                        + rs.getString("firstName") + ","
-                        + rs.getString("lastName") + ","
-                        + dateOfBirth + ","
-                        + email + ","
-                        + phoneNumber + ","
-                        + rs.getString("bio") + ","
-                        + userImageStr + ","
-                        + lastSeenStr + ","
-                        + isFollowing;
-                clt.addResponse(
-                        new Packet(PacketType.GET_USER_INFO_RES,
-                                body,
-                                clt.getAuthToken(),
-                                true,
-                                rp.getClientID(),
-                                rp.getRequestID())
-                );
-            }
+            String userImageStr = "";
+            byte[] userImage = rs.getBytes("userImage");
+            if(userImage!=null)
+                userImageStr = Base64.getEncoder().encodeToString(userImage);
+            String body = "success,"
+                    + rs.getString("userName") + ","
+                    + rs.getString("firstName") + ","
+                    + rs.getString("lastName") + ","
+                    + dateOfBirthStr + ","
+                    + email + ","
+                    + phoneNumber + ","
+                    + userImageStr + ","
+                    + lastSeenStr + ","
+                    + isFollowing + ","
+                    + rs.getString("bio");
+            clt.addResponse(
+                    new Packet(PacketType.GET_USER_INFO_RES,
+                            body,
+                            clt.getAuthToken(),
+                            true,
+                            rp.getClientID(),
+                            rp.getRequestID())
+            );
         } catch (SQLException e) {
             //e.printStackTrace();
             LogHandler.logger.error("could not get result from DB");

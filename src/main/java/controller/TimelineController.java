@@ -41,7 +41,7 @@ public class TimelineController {
                 + " and (rr.\"relationType\" = " + RelationType.MUTE.ordinal()
                 + " or rr.\"relationType\" = " + RelationType.BLOCK.ordinal() + ")";
         String query = "select t.*, u.\"userName\", u.\"firstName\", u.\"lastName\", u.\"userImage\""
-                + " from \"Tweet\" t, \"User\" u, \"Relation\" r"
+                + " from \"Tweet\" t, \"User\" u"
                 + " where u.\"accountActive\" = true"
                 + " and t.\"reportedNumber\" <= " + REPORTED_NUMBER_LIMIT
                 + " and exists (" + subQuery1 + ")"

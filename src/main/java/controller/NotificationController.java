@@ -70,7 +70,7 @@ public class NotificationController {
         String userName = rp.getBody();
 
         String query = "select u.\"userID\" from \"User\" u"
-                + " where u.\"userName\" = " + userName
+                + " where u.\"userName\" = " + "'" + userName + "'"
                 + " and u.\"accountActive\" = true";
         ResultSet rs = Main.getMainController().getDbCommunicator().executeQuery(query);
         String body = "";
@@ -80,6 +80,7 @@ public class NotificationController {
             deleteNotification(subjectID,objectID,NotificationType.FOLLOW_REQUEST);
             insertNotification(subjectID,objectID,NotificationType.FOLLOWED);
             insertNotification(subjectID,objectID,NotificationType.ACCEPTED);
+            RelationController.insertRelation(subjectID,objectID,RelationType.FOLLOW);
             body = "success";
         } catch (SQLException e) {
             //e.printStackTrace();
@@ -106,7 +107,7 @@ public class NotificationController {
         String userName = args[0];
 
         String query = "select u.\"userID\" from \"User\" u"
-                + " where u.\"userName\" = " + userName
+                + " where u.\"userName\" = " + "'" + userName + "'"
                 + " and u.\"accountActive\" = true";
         ResultSet rs = Main.getMainController().getDbCommunicator().executeQuery(query);
         String body = "";

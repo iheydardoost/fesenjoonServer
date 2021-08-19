@@ -35,7 +35,7 @@ public class ExplorerController {
                         + " and (rr.\"relationType\" = " + RelationType.MUTE.ordinal()
                         + " or rr.\"relationType\" = " + RelationType.BLOCK.ordinal() + ")";
         String query = "select t.*, u.\"userName\", u.\"firstName\", u.\"lastName\", u.\"userImage\""
-                    + " from \"Tweet\" t, \"User\" u, \"Relation\" r"
+                    + " from \"Tweet\" t, \"User\" u"
                     + " where u.\"accountPrivate\" = false"
                     + " and u.\"accountActive\" = true"
                     + " and t.\"reportedNumber\" <= " + REPORTED_NUMBER_LIMIT
@@ -58,10 +58,16 @@ public class ExplorerController {
     public void handleSearchUsernameReq(Packet rp){
         SocketController socketController = Main.getMainController().getSocketController();
         long subjectID = socketController.getClient(rp.getClientID()).getUserID();
-        String userName = rp.getBody();
+        String[] args = rp.getBody().split(",",-1);
+        String userName = args[0];
+        PacketType packetType;
+        if(args[1].equals("true"))
+            packetType = PacketType.SEARCH_USERNAME_EXPLORER_RES;
+        else
+            packetType = PacketType.SEARCH_USERNAME_LIST_RES;
 
         String query = "select * from \"User\" u"
-                + " where u.\"userName\" = " + userName
+                + " where u.\"userName\" = " + "'" + userName + "'"
                 + " and u.\"accountActive\" = true";
         ResultSet rs = Main.getMainController().getDbCommunicator().executeQuery(query);
 
@@ -69,7 +75,7 @@ public class ExplorerController {
         try {
             if(rs.next()){
                 clt.addResponse(
-                        new Packet(PacketType.GET_USER_INFO_RES,
+                        new Packet(packetType,
                                 "found," + rs.getLong("userID"),
                                 clt.getAuthToken(),
                                 true,
@@ -83,7 +89,7 @@ public class ExplorerController {
             LogHandler.logger.error("could not get result from DB");
         }
         clt.addResponse(
-                new Packet(PacketType.SEARCH_USERNAME_RES,
+                new Packet(packetType,
                         "not found,0",
                         clt.getAuthToken(),
                         true,

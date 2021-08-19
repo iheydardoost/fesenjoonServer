@@ -121,7 +121,7 @@ public class RelationController {
         SocketController socketController = Main.getMainController().getSocketController();
         long userID = socketController.getClient(rp.getClientID()).getUserID();
         /***************************************************************************************/
-        String query = "select u.\"userName\", u.\"firstName\", u.\"lastName\", u.\"userImage\""
+        String query = "select u.\"userName\", u.\"firstName\", u.\"lastName\", u.\"userImage\", u.\"userID\""
                 + " from \"User\" u, \"Relation\" r"
                 + " where r.\"subjectID\" = " + userID
                 + " and r.\"objectID\" = u.\"userID\""
@@ -135,7 +135,7 @@ public class RelationController {
         SocketController socketController = Main.getMainController().getSocketController();
         long userID = socketController.getClient(rp.getClientID()).getUserID();
         /***************************************************************************************/
-        String query = "select u.\"userName\", u.\"firstName\", u.\"lastName\", u.\"userImage\""
+        String query = "select u.\"userName\", u.\"firstName\", u.\"lastName\", u.\"userImage\", u.\"userID\""
                 + " from \"User\" u, \"Relation\" r"
                 + " where r.\"objectID\" = " + userID
                 + " and r.\"subjectID\" = u.\"userID\""
@@ -149,7 +149,7 @@ public class RelationController {
         SocketController socketController = Main.getMainController().getSocketController();
         long userID = socketController.getClient(rp.getClientID()).getUserID();
         /***************************************************************************************/
-        String query = "select u.\"userName\", u.\"firstName\", u.\"lastName\", u.\"userImage\""
+        String query = "select u.\"userName\", u.\"firstName\", u.\"lastName\", u.\"userImage\", u.\"userID\""
                 + " from \"User\" u, \"Relation\" r"
                 + " where r.\"subjectID\" = " + userID
                 + " and r.\"objectID\" = u.\"userID\""
@@ -264,7 +264,8 @@ public class RelationController {
                 body = rs.getString("userName") + ","
                         + rs.getString("firstName") + ","
                         + rs.getString("lastName") + ","
-                        + userImageStr;
+                        + userImageStr + ","
+                        + rs.getLong("userID");
                 clt.addResponse(
                         new Packet(packetType,
                                 body,
