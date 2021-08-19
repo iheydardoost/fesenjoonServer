@@ -17,17 +17,19 @@ public class TweetController {
     }
 
     public void handleNewTweetReq(Packet rp){
+        SocketController socketController = Main.getMainController().getSocketController();
+        long userID = socketController.getClient(rp.getClientID()).getUserID();
+
         String[] args = rp.getBody().split(",",-1);
         String tweetText = args[0];
         LocalDateTime tweetDateTime = LocalDateTime.parse(args[1]);
-        long userID = Long.parseLong(args[2]);
         long parentTweetID = 0;
-        if(!args[3].isEmpty())
-            parentTweetID = Long.parseLong(args[3]);
-        boolean retweeted = Boolean.parseBoolean(args[4]);
+        if(!args[2].isEmpty())
+            parentTweetID = Long.parseLong(args[2]);
+        boolean retweeted = Boolean.parseBoolean(args[3]);
         byte[] tweetImage = null;
-        if(!args[5].isEmpty())
-            tweetImage = Base64.getDecoder().decode(args[5]);
+        if(!args[4].isEmpty())
+            tweetImage = Base64.getDecoder().decode(args[4]);
         /***********************************************************/
         Tweet tweet =
                 tweetBuilder.setTweetText(tweetText)
@@ -66,7 +68,6 @@ public class TweetController {
             int updatedImageNum = Main.getMainController().getDbCommunicator().executeUpdateBytea(query, tweetImage);
         }
         /***********************************************************/
-        SocketController socketController = Main.getMainController().getSocketController();
         String body = "";
         if(updatedRowsNum==1){
             body = "success," + tweet.isRetweeted();
