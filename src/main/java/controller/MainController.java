@@ -3,15 +3,17 @@ package controller;
 import model.Packet;
 
 public class MainController {
-    private SocketController socketController;
-    private ConfigLoader configLoader;
-    private DBCommunicator dbCommunicator;
-    private AuthenticationController authenticationController;
-    private SettingController settingController;
-    private TimelineController timelineController;
-    private ExplorerController explorerController;
-    private TweetController tweetController;
-    private RelationController relationController;
+    private final SocketController socketController;
+    private final ConfigLoader configLoader;
+    private final DBCommunicator dbCommunicator;
+    private final AuthenticationController authenticationController;
+    private final SettingController settingController;
+    private final TimelineController timelineController;
+    private final ExplorerController explorerController;
+    private final TweetController tweetController;
+    private final RelationController relationController;
+    private final PrivateController privateController;
+    private final NotificationController notificationController;
     public static final int REPORTED_NUMBER_LIMIT = 3;
 
     public MainController() {
@@ -23,6 +25,8 @@ public class MainController {
         explorerController = new ExplorerController();
         tweetController = new TweetController();
         relationController = new RelationController();
+        privateController = new PrivateController();
+        notificationController = new NotificationController();
 
         socketController = new SocketController();
     }
@@ -94,6 +98,48 @@ public class MainController {
                 break;
             case GET_COMMENTS_REQ:
                 tweetController.handleGetCommentsReq(rp);
+                break;
+            case SEARCH_USERNAME_REQ:
+                explorerController.handleSearchUsernameReq(rp);
+                break;
+            case GET_TWEET_LIST_REQ:
+                tweetController.handleGetTweetListReq(rp);
+                break;
+            case GET_BLACK_LIST_REQ:
+                relationController.handleGetBlackListReq(rp);
+                break;
+            case GET_FOLLOWERS_LIST_REQ:
+                relationController.handleGetFollowersListReq(rp);
+                break;
+            case GET_FOLLOWINGS_LIST_REQ:
+                relationController.handleGetFollowingsListReq(rp);
+                break;
+            case GET_NOTIFICATIONS_REQ:
+                notificationController.handleGetNotificationReq(rp);
+                break;
+            case GET_PENDING_FOLLOW_REQ:
+                notificationController.handleGetPendingFollowReq(rp);
+                break;
+            case ACCEPT_FOLLOW_REQ:
+                notificationController.handleAcceptFollowReq(rp);
+                break;
+            case REJECT_FOLLOW_REQ:
+                notificationController.handleRejectFollowReq(rp);
+                break;
+            case EDIT_USER_INFO_REQ:
+                privateController.handleEditUserInfoReq(rp);
+                break;
+            case GET_USER_INFO_REQ:
+                privateController.handleGetUserInfo(rp);
+                break;
+            case GET_PRIVATE_INFO_REQ:
+                privateController.handleGetPrivateInfo(rp);
+                break;
+            case FOLLOW_USER_REQ:
+                relationController.handleFollowUserReq(rp);
+                break;
+            case UNFOLLOW_USER_REQ:
+                relationController.handleUnfollowUserReq(rp);
                 break;
             default:
                 break;

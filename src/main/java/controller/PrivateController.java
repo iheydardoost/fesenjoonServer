@@ -112,8 +112,10 @@ public class PrivateController {
                 + " and r.\"objectID\" = " + objectID
                 + " and r.\"relationType\" = " + RelationType.FOLLOW;
         ResultSet rs1 = Main.getMainController().getDbCommunicator().executeQuery(query);
+        /************************************************************/
         boolean isFollowing = false;
         String lastSeenStr = "";
+        String dateOfBirth="",email="",phoneNumber="";
         try {
             rs1.next();
             if(rs1.getInt(1)!=0)
@@ -139,6 +141,12 @@ public class PrivateController {
                     }
                 } else {
                     lastSeenStr = "online";
+                }
+
+                if(isFollowing){
+                    dateOfBirth = rs.getDate("dateOfBirth").toString();
+                    email = rs.getString("email");
+                    phoneNumber = rs.getString("phoneNumber");
                 }
             }
             else {
@@ -166,6 +174,10 @@ public class PrivateController {
                         + rs.getString("userName") + ","
                         + rs.getString("firstName") + ","
                         + rs.getString("lastName") + ","
+                        + dateOfBirth + ","
+                        + email + ","
+                        + phoneNumber + ","
+                        + rs.getString("bio") + ","
                         + userImageStr + ","
                         + lastSeenStr + ","
                         + isFollowing;
