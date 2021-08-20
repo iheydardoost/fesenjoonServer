@@ -201,6 +201,9 @@ public class MainController {
             case GET_SELECT_LIST_REQ:
                 chatController.handleGetSelectListReq(rp);
                 break;
+            case EDIT_MESSAGE_REQ:
+                messageController.handleEditMessageReq(rp);
+                break;
             default:
                 break;
         }

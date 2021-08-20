@@ -271,6 +271,30 @@ public class MessageController {
         }
     }
 
+    public void handleEditMessageReq(Packet rp){
+        SocketController socketController = Main.getMainController().getSocketController();
+        long userID = socketController.getClient(rp.getClientID()).getUserID();
+        String[] args = rp.getBody().split(",",-1);
+
+        long msgID = Long.parseLong(args[0]);
+        String body = "error";
+        if(!args[1].isEmpty()) {
+            String query = "update \"Message\" set \"msgText\" = "
+                    + "'" + args[1] + "'"
+                    + " where \"msgID\" = " + msgID;
+            if(Main.getMainController().getDbCommunicator().executeUpdate(query)!=0)
+                body = "success";
+        }
+        socketController.getClient(rp.getClientID()).addResponse(
+                new Packet(PacketType.EDIT_MESSAGE_RES,
+                        body,
+                        rp.getAuthToken(),
+                        true,
+                        rp.getClientID(),
+                        rp.getRequestID())
+        );
+    }
+
     public static void updateMessageStatus(long msgID,MessageStatus messageStatus){
         String query = "update \"Message\" set \"msgStatus\" = "
                 + messageStatus.ordinal()
