@@ -1,6 +1,7 @@
 package controller.builder;
 
 import main.Main;
+import model.HyperLinkActionType;
 import model.Message;
 import model.MessageStatus;
 
@@ -16,6 +17,8 @@ public class MessageBuilder {
     private boolean forwarded;
     private MessageStatus msgStatus;
     private byte[] msgImage;
+    private long hyperLinkID;
+    private HyperLinkActionType hyperLinkActionType;
 
     public MessageBuilder() {
         this.msgText = null;
@@ -25,6 +28,8 @@ public class MessageBuilder {
         this.forwarded = false;
         this.msgStatus = null;
         this.msgImage = null;
+        this.hyperLinkID = 0;
+        this.hyperLinkActionType = null;
     }
 
     private long findLastMessageID(){
@@ -46,39 +51,56 @@ public class MessageBuilder {
         return (lastMessageID+1);
     }
 
-    public void setMsgText(String msgText) {
+    public MessageBuilder setMsgText(String msgText) {
         this.msgText = msgText;
+        return this;
     }
 
-    public void setMsgDateTime(LocalDateTime msgDateTime) {
+    public MessageBuilder setMsgDateTime(LocalDateTime msgDateTime) {
         this.msgDateTime = msgDateTime;
+        return this;
     }
 
-    public void setUserID(long userID) {
+    public MessageBuilder setUserID(long userID) {
         this.userID = userID;
+        return this;
     }
 
-    public void setChatID(long chatID) {
+    public MessageBuilder setChatID(long chatID) {
         this.chatID = chatID;
+        return this;
     }
 
-    public void setForwarded(boolean forwarded) {
+    public MessageBuilder setForwarded(boolean forwarded) {
         this.forwarded = forwarded;
+        return this;
     }
 
-    public void setMsgStatus(MessageStatus msgStatus) {
+    public MessageBuilder setMsgStatus(MessageStatus msgStatus) {
         this.msgStatus = msgStatus;
+        return this;
     }
 
-    public void setMsgImage(byte[] msgImage) {
+    public MessageBuilder setMsgImage(byte[] msgImage) {
         this.msgImage = msgImage;
+        return this;
+    }
+
+    public MessageBuilder setHyperLinkActionType(HyperLinkActionType hyperLinkActionType) {
+        this.hyperLinkActionType = hyperLinkActionType;
+        return this;
+    }
+
+    public void setHyperLinkID(long hyperLinkID) {
+        this.hyperLinkID = hyperLinkID;
     }
 
     public Message build(){
         Message message = new Message(
                 this.msgText, this.msgDateTime,
                 this.userID, this.chatID, generateNewMessageID(),
-                this.forwarded, this.msgStatus, this.msgImage);
+                this.forwarded, this.msgStatus, this.msgImage,
+                this.hyperLinkID, this.hyperLinkActionType);
 
         this.msgText = null;
         this.msgDateTime = null;
@@ -87,6 +109,8 @@ public class MessageBuilder {
         this.forwarded = false;
         this.msgStatus = null;
         this.msgImage = null;
+        this.hyperLinkID = 0;
+        this.hyperLinkActionType = null;
 
         return message;
     }

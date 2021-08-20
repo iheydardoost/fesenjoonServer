@@ -375,7 +375,6 @@ public class TweetController {
             String body = "";
             int likedNum=0, commentNum=0;
             boolean youLiked = false;
-            ResultSet rs1 = null;
             while(rs.next()){
                 likedNum = TweetController.getLikedNum(rs.getLong("tweetID"));
                 commentNum = TweetController.getCommentNum(rs.getLong("tweetID"));

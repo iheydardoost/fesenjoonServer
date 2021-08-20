@@ -14,6 +14,9 @@ public class MainController {
     private final RelationController relationController;
     private final PrivateController privateController;
     private final NotificationController notificationController;
+    private final CollectionController collectionController;
+    private final ChatController chatController;
+    private final MessageController messageController;
     public static final int REPORTED_NUMBER_LIMIT = 3;
 
     public MainController() {
@@ -27,6 +30,9 @@ public class MainController {
         relationController = new RelationController();
         privateController = new PrivateController();
         notificationController = new NotificationController();
+        collectionController = new CollectionController();
+        chatController = new ChatController();
+        messageController = new MessageController();
 
         socketController = new SocketController();
     }
@@ -143,6 +149,57 @@ public class MainController {
                 break;
             case UNFOLLOW_USER_REQ:
                 relationController.handleUnfollowUserReq(rp);
+                break;
+            case WANT_UPDATE_CHAT_REQ:
+                socketController.handleWantUpdateChatReq(rp);
+                break;
+            case WANT_UPDATE_CHATROOM_REQ:
+                socketController.handleWantUpdateChatroomReq(rp);
+                break;
+            case GET_FOLDER_LIST_REQ:
+                collectionController.handleGetFolderListReq(rp);
+                break;
+            case NEW_FOLDER_REQ:
+                collectionController.handleNewFolderReq(rp);
+                break;
+            case DELETE_FOLDER_REQ:
+                collectionController.handleDeleteFolderReq(rp);
+                break;
+            case GET_EDIT_FOLDER_LIST_REQ:
+                collectionController.handleGetEditFolderListReq(rp);
+                break;
+            case SET_EDIT_FOLDER_LIST_REQ:
+                collectionController.handleSetEditFolderListReq(rp);
+                break;
+            case GET_GROUP_LIST_REQ:
+                chatController.handleGetGroupListReq(rp);
+                break;
+            case NEW_GROUP_REQ:
+                chatController.handleNewGroupReq(rp);
+                break;
+            case DELETE_GROUP_REQ:
+                chatController.handleDeleteGroupReq(rp);
+                break;
+            case GET_EDIT_GROUP_LIST_REQ:
+                chatController.handleGetEditGroupListReq(rp);
+                break;
+            case SET_EDIT_GROUP_LIST_REQ:
+                chatController.handleSetEditGroupListReq(rp);
+                break;
+            case GET_CHATROOM_LIST_REQ:
+                chatController.handleGetChatroomListReq(rp);
+                break;
+            case GET_MESSAGES_REQ:
+                messageController.handleGetMessagesReq(rp);
+                break;
+            case NEW_MESSAGE_REQ:
+                messageController.handleNewMessageReq(rp);
+                break;
+            case DELETE_MESSAGE_REQ:
+                messageController.handleDeleteMessageReq(rp);
+                break;
+            case GET_SELECT_LIST_REQ:
+                chatController.handleGetSelectListReq(rp);
                 break;
             default:
                 break;

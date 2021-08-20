@@ -2,6 +2,7 @@ package controller;
 
 import controller.builder.UserBuilder;
 import main.Main;
+import model.ChatType;
 import model.Packet;
 import model.PacketType;
 import model.User;
@@ -10,6 +11,7 @@ import java.security.SecureRandom;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.Base64;
 
 public class AuthenticationController {
     private UserBuilder userBuilder;
@@ -56,9 +58,9 @@ public class AuthenticationController {
         }
 
         SocketController socketController = Main.getMainController().getSocketController();
+        ClientHandler clt = socketController.getClient(rp.getClientID());
         if(count1 != 0){
-            socketController.getClient(rp.getClientID())
-                    .addResponse(
+            clt.addResponse(
                             new Packet(PacketType.SIGN_IP_RES,
                                     "error,userName already exists",
                                     0,
@@ -69,8 +71,7 @@ public class AuthenticationController {
             return;
         }
         else if(count2 != 0){
-            socketController.getClient(rp.getClientID())
-                    .addResponse(
+            clt.addResponse(
                             new Packet(PacketType.SIGN_IP_RES,
                                     "error,email already exists",
                                     0,
@@ -131,11 +132,9 @@ public class AuthenticationController {
         /**********************************************/
         if(updatedRowsNum==1){
             int newAuthToken = SECURE_RANDOM.nextInt(Integer.MAX_VALUE);
-            socketController.getClient(rp.getClientID())
-                    .setAuthToken(newAuthToken)
+            clt.setAuthToken(newAuthToken)
                     .setUserID(user.getUserID());
-            socketController.getClient(rp.getClientID())
-                    .addResponse(
+            clt.addResponse(
                             new Packet(PacketType.SIGN_IP_RES,
                                     "success,signed up successfully",
                                     newAuthToken,
@@ -143,11 +142,11 @@ public class AuthenticationController {
                                     rp.getClientID(),
                                     rp.getRequestID())
                     );
+            createMessagingDefaults(user);
             LogHandler.logger.info("userID:" + user.getUserID() + " signed up successfully");
         }
         else{
-            socketController.getClient(rp.getClientID())
-                    .addResponse(
+            clt.addResponse(
                             new Packet(PacketType.SIGN_IP_RES,
                                     "error,sign up failed (try again)",
                                     0,
@@ -157,6 +156,12 @@ public class AuthenticationController {
                     );
             LogHandler.logger.error("could not create new user in DB");
         }
+    }
+
+    private void createMessagingDefaults(User user){
+        CollectionController.insertCollection(user.getUserID(), "all");
+        long chatID = ChatController.insertChat("savedMessages", ChatType.SAVED_MESSAGES);
+        ChatController.insertChatMember(chatID,user.getUserID());
     }
 
     public void handleLogIn(Packet rp){

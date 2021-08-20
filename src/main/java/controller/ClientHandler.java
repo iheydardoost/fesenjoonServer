@@ -23,11 +23,17 @@ public class ClientHandler implements Runnable{
     private long userID;
     private final LinkedList<Packet> requests;
     private final LinkedList<Packet> responses;
+    private boolean wantToUpdateChatroom;
+    private boolean wantToUpdateChat;
+    private long chatIDToUpdate;
 
     public ClientHandler(Socket socket, int clientID) {
         requests = new LinkedList<>();
         responses = new LinkedList<>();
         this.clientID = clientID;
+        this.wantToUpdateChat = false;
+        this.wantToUpdateChatroom = false;
+        this.chatIDToUpdate = 0;
 
         this.socket = socket;
         try {
@@ -119,5 +125,29 @@ public class ClientHandler implements Runnable{
     public ClientHandler setAuthToken(int authToken){
         this.authToken = authToken;
         return this;
+    }
+
+    public boolean isWantToUpdateChatroom() {
+        return wantToUpdateChatroom;
+    }
+
+    public void setWantToUpdateChatroom(boolean wantToUpdateChatroom) {
+        this.wantToUpdateChatroom = wantToUpdateChatroom;
+    }
+
+    public boolean isWantToUpdateChat() {
+        return wantToUpdateChat;
+    }
+
+    public void setWantToUpdateChat(boolean wantToUpdateChat) {
+        this.wantToUpdateChat = wantToUpdateChat;
+    }
+
+    public long getChatIDToUpdate() {
+        return chatIDToUpdate;
+    }
+
+    public void setChatIDToUpdate(long chatIDToUpdate) {
+        this.chatIDToUpdate = chatIDToUpdate;
     }
 }

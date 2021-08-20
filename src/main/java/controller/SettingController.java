@@ -1,6 +1,7 @@
 package controller;
 
 import main.Main;
+import model.ChatType;
 import model.LastSeenStatus;
 import model.Packet;
 import model.PacketType;
@@ -97,6 +98,7 @@ public class SettingController {
         SocketController socketController = Main.getMainController().getSocketController();
         long userID = socketController.getClient(rp.getClientID()).getUserID();
 
+        deleteMessagingDefaults(userID);
         String query = "delete from \"User\" where \"userID\" = " + userID;
         int deletedRowsNum = Main.getMainController().getDbCommunicator().executeUpdate(query);
 
@@ -120,6 +122,22 @@ public class SettingController {
                                 rp.getClientID(),
                                 rp.getRequestID())
                 );
+    }
+
+    private void deleteMessagingDefaults(long userID){
+        String query = "select c.\"chatID\" from \"Chat\" c where"
+                + " c.\"chatName\" = 'savedMessages'"
+                + " and c.\"chatType\" = " + ChatType.SAVED_MESSAGES.ordinal();
+        ResultSet rs = Main.getMainController().getDbCommunicator().executeQuery(query);
+        long chatID = 0;
+        try {
+            if(rs.next()){
+                chatID = rs.getLong("chatID");
+                ChatController.deleteChat(chatID);
+            }
+        } catch (SQLException e) {
+            //e.printStackTrace();
+        }
     }
 
     public void handleLogoutReq(Packet rp){
@@ -151,5 +169,18 @@ public class SettingController {
                 + "'" + LocalDate.now() + "'"
                 + " where \"userID\" = " + userID;
         Main.getMainController().getDbCommunicator().executeUpdate(query);
+    }
+
+    public static long findUserID(String userName){
+        String query = "select \"userID\" from \"User\""
+                + " where \"userName\" = '" + userName + "'";
+        ResultSet rs = Main.getMainController().getDbCommunicator().executeQuery(query);
+        try {
+            if(rs.next())
+                return rs.getLong("userID");
+        } catch (SQLException e) {
+            //e.printStackTrace();
+        }
+        return 0;
     }
 }

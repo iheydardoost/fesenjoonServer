@@ -11,13 +11,16 @@ public class Message {
     private boolean forwarded;
     private MessageStatus msgStatus;
     private byte[] msgImage;
+    private long hyperLinkID;
+    private HyperLinkActionType hyperLinkActionType;
 
     public Message() {
     }
 
     public Message(String msgText, LocalDateTime msgDateTime,
                    long userID, long chatID, long msgID,
-                   boolean forwarded, MessageStatus msgStatus, byte[] msgImage) {
+                   boolean forwarded, MessageStatus msgStatus, byte[] msgImage,
+                   long hyperLinkID, HyperLinkActionType hyperLinkActionType) {
         this.msgText = msgText;
         this.msgDateTime = msgDateTime;
         this.userID = userID;
@@ -26,6 +29,8 @@ public class Message {
         this.forwarded = forwarded;
         this.msgStatus = msgStatus;
         this.msgImage = msgImage;
+        this.hyperLinkID = hyperLinkID;
+        this.hyperLinkActionType = hyperLinkActionType;
     }
 
     public String getMsgText() {
@@ -90,5 +95,21 @@ public class Message {
 
     public void setMsgImage(byte[] msgImage) {
         this.msgImage = msgImage;
+    }
+
+    public long getHyperLinkID() {
+        return hyperLinkID;
+    }
+
+    public void setHyperLinkID(long hyperLinkID) {
+        this.hyperLinkID = hyperLinkID;
+    }
+
+    public HyperLinkActionType getHyperLinkActionType() {
+        return hyperLinkActionType;
+    }
+
+    public void setHyperLinkActionType(HyperLinkActionType hyperLinkActionType) {
+        this.hyperLinkActionType = hyperLinkActionType;
     }
 }

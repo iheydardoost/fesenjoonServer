@@ -2,6 +2,7 @@ package controller;
 
 import main.LoopHandler;
 import main.Main;
+import model.Packet;
 import model.config.ServerSocketConfig;
 
 import java.io.IOException;
@@ -100,5 +101,17 @@ public class SocketController implements Runnable{
             }
         }
         return false;
+    }
+
+    public void handleWantUpdateChatReq(Packet rp){
+        ClientHandler clt = this.getClient(rp.getClientID());
+        String[] args = rp.getBody().split(",",-1);
+        clt.setWantToUpdateChat(Boolean.parseBoolean(args[0]));
+        clt.setChatIDToUpdate(Long.parseLong(args[1]));
+    }
+
+    public void handleWantUpdateChatroomReq(Packet rp){
+        ClientHandler clt = this.getClient(rp.getClientID());
+        clt.setWantToUpdateChatroom(Boolean.parseBoolean(rp.getBody()));
     }
 }

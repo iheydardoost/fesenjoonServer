@@ -48,16 +48,31 @@ CREATE TABLE "Like/Spam" (
 
 CREATE TABLE "Collection" (
   "ownerID" bigint ,
-  "collectionID" bigint ,
-  "memberID" bigint ,
+  "collectionID" bigint UNIQUE,
+  "collectionName" text,
+  PRIMARY KEY ("collectionID"),
   CONSTRAINT "FK_Collection.ownerID"
     FOREIGN KEY ("ownerID")
       REFERENCES "User"("userID")
       ON DELETE CASCADE
 );
 
+CREATE TABLE "CollectionMember" (
+  "collectionID" bigint ,
+  "memberID" bigint ,
+  CONSTRAINT "FK_CollectionMember.collectionID"
+    FOREIGN KEY ("collectionID")
+      REFERENCES "Collection"("collectionID")
+      ON DELETE CASCADE,
+  CONSTRAINT "FK_CollectionMember.memberID"
+    FOREIGN KEY ("memberID")
+      REFERENCES "User"("userID")
+      ON DELETE CASCADE
+);
+
 CREATE TABLE "Chat" (
   "chatID" bigint UNIQUE,
+  "chatName" text,
   "chatType" integer,
   PRIMARY KEY ("chatID")
 );
@@ -67,7 +82,8 @@ CREATE TABLE "ChatMember" (
   "memberID" bigint ,
   CONSTRAINT "FK_ChatMember.chatID"
     FOREIGN KEY ("chatID")
-      REFERENCES "Chat"("chatID"),
+      REFERENCES "Chat"("chatID")
+      ON DELETE CASCADE,
   CONSTRAINT "FK_ChatMember.memberID"
     FOREIGN KEY ("memberID")
       REFERENCES "User"("userID")
@@ -92,6 +108,7 @@ CREATE TABLE "Message" (
   CONSTRAINT "FK_Message.chatID"
     FOREIGN KEY ("chatID")
       REFERENCES "Chat"("chatID")
+      ON DELETE CASCADE
 );
 
 CREATE TABLE "Notification" (
