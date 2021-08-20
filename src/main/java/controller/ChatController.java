@@ -20,7 +20,7 @@ public class ChatController {
         SocketController socketController = Main.getMainController().getSocketController();
         long userID = socketController.getClient(rp.getClientID()).getUserID();
 
-        String query = "select c.* form \"Chat\" c, \"ChatMember\" cm"
+        String query = "select c.* from \"Chat\" c, \"ChatMember\" cm"
                 + " where cm.\"memberID\" = " + userID
                 + " and c.\"chatID\" = cm.\"chatID\"";
         ResultSet rs = Main.getMainController().getDbCommunicator().executeQuery(query);
@@ -49,8 +49,11 @@ public class ChatController {
         SocketController socketController = Main.getMainController().getSocketController();
         long userID = socketController.getClient(rp.getClientID()).getUserID();
         String body = "error";
-        if(insertChat(rp.getBody(),ChatType.GROUP)!=0)
+        long chatID = insertChat(rp.getBody(),ChatType.GROUP);
+        if(chatID!=0) {
             body = "success";
+            insertChatMember(chatID, userID);
+        }
         socketController.getClient(rp.getClientID())
                 .addResponse(
                         new Packet(PacketType.NEW_GROUP_RES,
@@ -87,7 +90,7 @@ public class ChatController {
         String query = "select u.\"userName\", u.\"firstName\", u.\"lastName\", u.\"userID\""
                 + " from \"User\" u"
                 + " where u.\"accountActive\" = true"
-                + " and exist (select * from \"Relation\" r"
+                + " and exists (select * from \"Relation\" r"
                 + " where r.\"relationType\" = " + RelationType.FOLLOW.ordinal()
                 + " and (( r.\"subjectID\" = " + userID
                 + " and r.\"objectID\" = u.\"userID\")"
@@ -141,6 +144,7 @@ public class ChatController {
         String body = "";
         if(updatedRowsNum==args.length-1){
             body = "success";
+            insertChatMember(chatID,userID);
             LogHandler.logger.info("chatID:" + chatID + " members added");
         }
         else{
@@ -204,7 +208,7 @@ public class ChatController {
         String query = "select u.\"firstName\", u.\"lastName\", u.\"userID\""
                 + " from \"User\" u"
                 + " where u.\"accountActive\" = true"
-                + " and exist (select * from \"Relation\" r"
+                + " and exists (select * from \"Relation\" r"
                 + " where r.\"relationType\" = " + RelationType.FOLLOW.ordinal()
                 + " and (( r.\"subjectID\" = " + userID
                 + " and r.\"objectID\" = u.\"userID\")"
@@ -343,7 +347,8 @@ public class ChatController {
 
     public static boolean deleteChat(long chatID){
         String query = "delete from \"Chat\" where"
-                + " \"chatID\" = " + chatID;
+                + " \"chatID\" = " + chatID
+                + " and \"chatType\" != " + ChatType.SAVED_MESSAGES.ordinal();
         int updatedRowsNum = Main.getMainController().getDbCommunicator().executeUpdate(query);
         if(updatedRowsNum==1){
             LogHandler.logger.info("chatID:" + chatID + " deleted");
@@ -359,11 +364,11 @@ public class ChatController {
         String query = "insert into \"ChatMember\" ("
                 + "\"memberID\","
                 + "\"chatID\")"
-                + " values ("
+                + " select "
                 + memberID + ","
-                + chatID + ")"
-                + " where exists (select * from \"Chat\""
-                + " where \"chatID\" = " + chatID + ")";
+                + chatID
+                + " where exists (select * from \"Chat\" c"
+                + " where c.\"chatID\" = " + chatID + ")";
         int updatedRowsNum = Main.getMainController().getDbCommunicator().executeUpdate(query);
 
         if(updatedRowsNum==1){

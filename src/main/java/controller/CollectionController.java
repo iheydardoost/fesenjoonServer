@@ -22,9 +22,9 @@ public class CollectionController {
         SocketController socketController = Main.getMainController().getSocketController();
         long userID = socketController.getClient(rp.getClientID()).getUserID();
 
-        String query = "select * form \"Collection\""
+        String query = "select * from \"Collection\""
                 + " where \"ownerID\" = " + userID
-                + " and \"collectionName\" != all";
+                + " and \"collectionName\" != 'all'";
         ResultSet rs = Main.getMainController().getDbCommunicator().executeQuery(query);
         try {
             ClientHandler clt = socketController.getClient(rp.getClientID());
@@ -89,7 +89,7 @@ public class CollectionController {
         String query = "select u.\"userName\", u.\"firstName\", u.\"lastName\", u.\"userID\""
                 + " from \"User\" u"
                 + " where u.\"accountActive\" = true"
-                + " and exist (select * from \"Relation\" r"
+                + " and exists (select * from \"Relation\" r"
                 + " where r.\"relationType\" = " + RelationType.FOLLOW.ordinal()
                 + " and (( r.\"subjectID\" = " + userID
                 + " and r.\"objectID\" = u.\"userID\")"
@@ -185,10 +185,10 @@ public class CollectionController {
                 + "\"ownerID\","
                 + "\"collectionID\","
                 + "\"collectionName\")"
-                + " values ("
+                + " select "
                 + userCollection.getOwnerID() + ","
                 + userCollection.getCollectionID() + ","
-                + "'" + userCollection.getCollectionName() + "'" + ")"
+                + "'" + userCollection.getCollectionName() + "'"
                 + " where not exists (select * from \"Collection\" c"
                 + " where c.\"collectionName\" = '" + userCollection.getCollectionName() + "'"
                 + " and c.\"ownerID\" = " + userCollection.getOwnerID() + ")";
@@ -224,9 +224,9 @@ public class CollectionController {
         String query = "insert into \"CollectionMember\" ("
                 + "\"memberID\","
                 + "\"collectionID\")"
-                + " values ("
+                + " select "
                 + memberID + ","
-                + collectionID + ")"
+                + collectionID
                 + " where exists (select * from \"Collection\""
                 + " where \"collectionID\" = " + collectionID + ")";
         int updatedRowsNum = Main.getMainController().getDbCommunicator().executeUpdate(query);

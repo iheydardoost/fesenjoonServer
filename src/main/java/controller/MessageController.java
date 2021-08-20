@@ -228,7 +228,7 @@ public class MessageController {
                     + "T" + lastMsgDateTime.toLocalTime().toString() + "'");
         }
         query += (" and m.\"userID\" = u.\"userID\" "
-                + "order by t.\"msgDateTime\" desc "
+                + "order by m.\"msgDateTime\" desc "
                 + "limit " + maxNum);
         ResultSet rs = Main.getMainController().getDbCommunicator().executeQuery(query);
         /***************************************************************************************/
@@ -303,6 +303,9 @@ public class MessageController {
     }
 
     public static boolean insertMessage(Message msg){
+        String msgStatus = "null";
+        if(msg.getMsgStatus()!=null)
+            msgStatus = Integer.toString(msg.getMsgStatus().ordinal());
         String query = "insert into \"Message\" ("
                 + "\"userID\","
                 + "\"chatID\","
@@ -319,7 +322,7 @@ public class MessageController {
                 + "'" + msg.getMsgDateTime().toLocalDate().toString() + "T"
                 + msg.getMsgDateTime().toLocalTime().toString() + "'" + ","
                 + msg.isForwarded() + ","
-                + msg.getMsgStatus().ordinal() + ")";
+                + msgStatus + ")";
         int updatedRowsNum = Main.getMainController().getDbCommunicator().executeUpdate(query);
 
         if(msg.getMsgImage()!=null) {

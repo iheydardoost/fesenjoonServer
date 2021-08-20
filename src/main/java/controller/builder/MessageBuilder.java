@@ -33,7 +33,7 @@ public class MessageBuilder {
     }
 
     private long findLastMessageID(){
-        String query = "select max(\"msgID\") from \"message\"";
+        String query = "select max(\"msgID\") from \"Message\"";
         ResultSet rs = Main.getMainController().getDbCommunicator().executeQuery(query);
         try {
             rs.next();
