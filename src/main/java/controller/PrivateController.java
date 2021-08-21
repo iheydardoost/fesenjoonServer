@@ -22,14 +22,17 @@ public class PrivateController {
         String variable = bodyArgs[0];
         String value;
         if(variable.equals("bio")){
-            String bio = bodyArgs[1];
+            String bio = PacketHandler.getDecodedArg(bodyArgs[1]);
             for(int i=2; i<bodyArgs.length; i++){
                 bio += ("," + bodyArgs[i]);
             }
             value = bio;
         }
-        else {
+        else if(variable.equals("userImage")){
             value = bodyArgs[1];
+        }
+        else {
+            value = PacketHandler.getDecodedArg(bodyArgs[1]);
         }
         /************************************************************/
         int updatedRowsNum = 0;
@@ -86,14 +89,14 @@ public class PrivateController {
                 String dateOfBirth = "";
                 if(rs.getDate("dateOfBirth")!=null)
                     dateOfBirth = rs.getDate("dateOfBirth").toString();
-                String body = rs.getString("userName") + ","
-                        + rs.getString("firstName") + ","
-                        + rs.getString("lastName") + ","
+                String body = PacketHandler.makeEncodedArg(rs.getString("userName")) + ","
+                        + PacketHandler.makeEncodedArg(rs.getString("firstName")) + ","
+                        + PacketHandler.makeEncodedArg(rs.getString("lastName")) + ","
                         + dateOfBirth + ","
-                        + rs.getString("email") + ","
-                        + rs.getString("phoneNumber") + ","
+                        + PacketHandler.makeEncodedArg(rs.getString("email")) + ","
+                        + PacketHandler.makeEncodedArg(rs.getString("phoneNumber")) + ","
                         + userImageStr + ","
-                        + rs.getString("bio");
+                        + PacketHandler.makeEncodedArg(rs.getString("bio"));
                 clt.addResponse(
                         new Packet(PacketType.GET_PRIVATE_INFO_RES,
                                 body,
@@ -127,14 +130,14 @@ public class PrivateController {
                 String dateOfBirth = "";
                 if(rs.getDate("dateOfBirth")!=null)
                     dateOfBirth = rs.getDate("dateOfBirth").toString();
-                String body = rs.getString("userName") + ","
-                        + rs.getString("firstName") + ","
-                        + rs.getString("lastName") + ","
+                String body = PacketHandler.makeEncodedArg(rs.getString("userName")) + ","
+                        + PacketHandler.makeEncodedArg(rs.getString("firstName")) + ","
+                        + PacketHandler.makeEncodedArg(rs.getString("lastName")) + ","
                         + dateOfBirth + ","
-                        + rs.getString("email") + ","
-                        + rs.getString("phoneNumber") + ","
+                        + PacketHandler.makeEncodedArg(rs.getString("email")) + ","
+                        + PacketHandler.makeEncodedArg(rs.getString("phoneNumber")) + ","
                         + userImageStr + ","
-                        + rs.getString("bio");
+                        + PacketHandler.makeEncodedArg(rs.getString("bio"));
                 clt.addResponse(
                         new Packet(PacketType.GET_EDIT_INFO_RES,
                                 body,
@@ -225,16 +228,16 @@ public class PrivateController {
             if(userImage!=null)
                 userImageStr = Base64.getEncoder().encodeToString(userImage);
             String body = "success,"
-                    + rs.getString("userName") + ","
-                    + rs.getString("firstName") + ","
-                    + rs.getString("lastName") + ","
+                    + PacketHandler.makeEncodedArg(rs.getString("userName")) + ","
+                    + PacketHandler.makeEncodedArg(rs.getString("firstName")) + ","
+                    + PacketHandler.makeEncodedArg(rs.getString("lastName")) + ","
                     + dateOfBirthStr + ","
-                    + email + ","
-                    + phoneNumber + ","
+                    + PacketHandler.makeEncodedArg(email) + ","
+                    + PacketHandler.makeEncodedArg(phoneNumber) + ","
                     + userImageStr + ","
                     + lastSeenStr + ","
                     + isFollowing + ","
-                    + rs.getString("bio");
+                    + PacketHandler.makeEncodedArg(rs.getString("bio"));
             clt.addResponse(
                     new Packet(PacketType.GET_USER_INFO_RES,
                             body,

@@ -22,14 +22,15 @@ public class ChatController {
 
         String query = "select c.* from \"Chat\" c, \"ChatMember\" cm"
                 + " where cm.\"memberID\" = " + userID
-                + " and c.\"chatID\" = cm.\"chatID\"";
+                + " and c.\"chatID\" = cm.\"chatID\""
+                + " and c.\"chatType\" != " + ChatType.TWO_WAY.ordinal();
         ResultSet rs = Main.getMainController().getDbCommunicator().executeQuery(query);
         try {
             ClientHandler clt = socketController.getClient(rp.getClientID());
             String body = "";
             while(rs.next()){
                 body = rs.getLong("chatID") + ","
-                        + rs.getString("chatName");
+                        + PacketHandler.makeEncodedArg(rs.getString("chatName"));
                 clt.addResponse(
                         new Packet(PacketType.GET_GROUP_LIST_RES,
                                 body,
@@ -49,7 +50,7 @@ public class ChatController {
         SocketController socketController = Main.getMainController().getSocketController();
         long userID = socketController.getClient(rp.getClientID()).getUserID();
         String body = "error";
-        long chatID = insertChat(rp.getBody(),ChatType.GROUP);
+        long chatID = insertChat(PacketHandler.getDecodedArg(rp.getBody()),ChatType.GROUP);
         if(chatID!=0) {
             body = "success";
             insertChatMember(chatID, userID);
@@ -103,9 +104,9 @@ public class ChatController {
             boolean isSelected = false;
             while(rs.next()){
                 isSelected = isMemberInChat(rs.getLong("userID"),chatID);
-                body =  rs.getString("firstName") + ","
-                        + rs.getString("lastName") + ","
-                        + rs.getString("userName") + ","
+                body =  PacketHandler.makeEncodedArg(rs.getString("firstName")) + ","
+                        + PacketHandler.makeEncodedArg(rs.getString("lastName")) + ","
+                        + PacketHandler.makeEncodedArg(rs.getString("userName")) + ","
                         + isSelected;
                 clt.addResponse(
                         new Packet(PacketType.GET_EDIT_GROUP_LIST_RES,
@@ -135,7 +136,7 @@ public class ChatController {
         int updatedRowsNum = 0;
         long memberID = 0;
         for (int i = 1; i < args.length; i++) {
-            memberID = SettingController.findUserID(args[i]);
+            memberID = SettingController.findUserID(PacketHandler.getDecodedArg(args[i]));
             if(memberID!=0)
                 if(insertChatMember(chatID,memberID))
                     updatedRowsNum++;
@@ -179,12 +180,12 @@ public class ChatController {
             while(rs.next()){
                 chatType = ChatType.values()[rs.getInt("chatType")];
                 chatID = rs.getLong("chatID");
-                if(chatType!=ChatType.TWO_WAY)
+                if(chatType==ChatType.SAVED_MESSAGES)
                     unSeen = 0;
                 else
                     unSeen = getChatUnseen(userID,chatID);
                 body =  chatID + ","
-                        + rs.getString("chatName") + ","
+                        + PacketHandler.makeEncodedArg(rs.getString("chatName")) + ","
                         + unSeen;
                 clt.addResponse(
                         new Packet(PacketType.GET_CHATROOM_LIST_RES,
@@ -219,7 +220,7 @@ public class ChatController {
             ClientHandler clt = socketController.getClient(rp.getClientID());
             String body = "";
             while(rs.next()){
-                body =  rs.getString("firstName") + " " + rs.getString("lastName") + ","
+                body =  PacketHandler.makeEncodedArg(rs.getString("firstName") + " " + rs.getString("lastName")) + ","
                         + CollectionItemType.USER + ","
                         + rs.getLong("userID");
                 clt.addResponse(
@@ -244,7 +245,7 @@ public class ChatController {
             ClientHandler clt = socketController.getClient(rp.getClientID());
             String body = "";
             while(rs.next()){
-                body =  rs.getString("collectionName") + ","
+                body =  PacketHandler.makeEncodedArg(rs.getString("collectionName")) + ","
                         + CollectionItemType.FOLDER + ","
                         + rs.getLong("collectionID");
                 clt.addResponse(
@@ -270,7 +271,7 @@ public class ChatController {
             ClientHandler clt = socketController.getClient(rp.getClientID());
             String body = "";
             while(rs.next()){
-                body =  rs.getString("chatName") + ","
+                body =  PacketHandler.makeEncodedArg(rs.getString("chatName")) + ","
                         + CollectionItemType.CHAT + ","
                         + rs.getLong("chatID");
                 clt.addResponse(
@@ -285,6 +286,38 @@ public class ChatController {
         } catch (SQLException e) {
             //e.printStackTrace();
             LogHandler.logger.error("could not get result from DB");
+        }
+    }
+
+    public void handleGetChatIDReq(Packet rp){
+        SocketController socketController = Main.getMainController().getSocketController();
+        long userID1 = socketController.getClient(rp.getClientID()).getUserID();
+        long userID2 = Long.parseLong(rp.getBody());
+
+        String query = "select c.\"chatID\""
+                + " from \"ChatMember\" cm, \"Chat\" c"
+                + " where c.\"chatType\" = " + ChatType.TWO_WAY.ordinal()
+                + " and exists (select * from \"ChatMember\" cm1"
+                + " where cm1.\"chatID\" = c.\"chatID\""
+                + " and cm1.\"memberID\" = " + userID1 + ")"
+                + " and exists (select * from \"ChatMember\" cm2"
+                + " where cm2.\"chatID\" = c.\"chatID\""
+                + " and cm2.\"memberID\" = " + userID2 + ")";
+        ResultSet rs = Main.getMainController().getDbCommunicator().executeQuery(query);
+        long chatID = 0;
+        try {
+            if(rs.next())
+                chatID = rs.getLong("chatID");
+            socketController.getClient(rp.getClientID()).addResponse(
+                    new Packet(PacketType.GET_CHAT_ID_BY_USER_ID_RES,
+                            Long.toString(chatID),
+                            rp.getAuthToken(),
+                            true,
+                            rp.getClientID(),
+                            rp.getRequestID())
+            );
+        } catch (SQLException e) {
+            //e.printStackTrace();
         }
     }
 

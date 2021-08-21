@@ -19,12 +19,188 @@ public class MessageController {
     public MessageController() {
     }
 
+    private void sendMessageToChat(Message message){
+        String query = "select cm.\"memberID\", u.\"firstName\", u.\"lastName\", m.\"userID\""
+                    + " from \"ChatMember\" cm, \"Message\" m, \"User\" u"
+                    + " where m.\"msgID\" = " + message.getMsgID()
+                    + " and m.\"chatID\" = cm.\"chatID\""
+                    + " and cm.\"memberID\" = u.\"userID\"";
+        ResultSet rs = Main.getMainController().getDbCommunicator().executeQuery(query);
+        long memberID = 0;
+        String body = "";
+        boolean isMine = false;
+        ClientHandler clt = null;
+        try {
+            while(rs.next()){
+                memberID = rs.getLong("memberID");
+                if(Main.getMainController().getSocketController().isUserOnline(memberID)){
+                    if(rs.getLong("userID")==memberID)
+                        isMine = true;
+                    else
+                        isMine = false;
+
+                    clt = Main.getMainController().getSocketController().getClientByID(memberID);
+                    if(!isMine)
+                        updateMessageStatus(message.getMsgID(), MessageStatus.RECEIVED);
+
+                    if(clt.isWantToUpdateChat()){
+                        if(!isMine)
+                            updateMessageStatus(message.getMsgID(), MessageStatus.SEEN);
+
+                        String msgImageStr = "";
+                        byte[] msgImage = message.getMsgImage();
+                        if(msgImage!=null)
+                            msgImageStr = Base64.getEncoder().encodeToString(msgImage);
+
+                        body = message.getMsgID() + ","
+                                + PacketHandler.makeEncodedArg(message.getMsgText()) + ","
+                                + msgImageStr + ","
+                                + message.getMsgDateTime().toString() + ","
+                                + message.isForwarded() + ","
+                                + message.getMsgStatus() + ","
+                                + isMine + ","
+                                + PacketHandler.makeEncodedArg(rs.getString("firstName")) + ","
+                                + PacketHandler.makeEncodedArg(rs.getString("lastName"));
+                        clt.addResponse(
+                                new Packet(PacketType.GET_MESSAGES_RES,
+                                        body,
+                                        clt.getAuthToken(),
+                                true,
+                                        clt.getClientID(),
+                                0)
+                        );
+                        sendUpdatedMessageStatusToAll(message.getChatID(),message.getMsgID(),message.getMsgStatus());
+                    }
+                    if(clt.isWantToUpdateChatroom()){
+                        clt.addResponse(
+                                new Packet(PacketType.REFRESH_CHATROOM_RES,
+                                        "",
+                                        clt.getAuthToken(),
+                                        true,
+                                        clt.getClientID(),
+                                        0)
+                        );
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            //e.printStackTrace();
+            LogHandler.logger.error("could not get data from DB");
+        }
+    }
+
+    private void sendMessageToAll(long collectionID, String msgText, byte[] msgImage,
+                                         LocalDateTime msgDateTime, long userID,
+                                         boolean isForwarded){
+        String query = "select u.\"userID\""
+                + " from \"User\" u"
+                + " where u.\"accountActive\" = true"
+                + " and exists (select * from \"Relation\" r"
+                + " where r.\"relationType\" = " + RelationType.FOLLOW.ordinal()
+                + " and (( r.\"subjectID\" = " + userID
+                + " and r.\"objectID\" = u.\"userID\")"
+                + " or ( r.\"subjectID\" = u.\"userID\""
+                + " and r.\"objectID\" = " + userID + ")))";
+        ResultSet rs1 = Main.getMainController().getDbCommunicator().executeQuery(query);
+        long memberID = 0;
+        ResultSet rs2 = null;
+        Message message = null;
+        try {
+            while(rs1.next()){
+                memberID = rs1.getLong("userID");
+                insertTwoWayChat(userID,memberID);
+
+                query = "select c.\"chatID\""
+                        + " from \"Chat\" c"
+                        + " where exists (select * from\"ChatMember\" cm1"
+                        + " where cm1.\"chatID\" = c.\"chatID\""
+                        + " and cm1.\"memberID\" = " + memberID + ")"
+                        + " and exists (select * from\"ChatMember\" cm2"
+                        + " where cm2.\"chatID\" = c.\"chatID\""
+                        + " and cm2.\"memberID\" = " + userID + ")"
+                        + " and c.\"chatType\" = " + ChatType.TWO_WAY.ordinal();
+                rs2 = Main.getMainController().getDbCommunicator().executeQuery(query);
+                if(rs2.next()){
+                    message = messageBuilder
+                            .setMsgText(msgText)
+                            .setMsgImage(msgImage)
+                            .setMsgDateTime(msgDateTime)
+                            .setUserID(userID)
+                            .setForwarded(isForwarded)
+                            .setMsgStatus(MessageStatus.SENT)
+                            .build();
+                    message.setChatID(rs2.getLong("chatID"));
+                    insertMessage(message);
+                    sendMessageToChat(message);
+                }
+            }
+        } catch (SQLException throwables) {
+            //throwables.printStackTrace();
+            LogHandler.logger.error("could not get data from DB");
+        }
+    }
+
+    private void sendMessageToCollection(long collectionID, String msgText, byte[] msgImage,
+                                         LocalDateTime msgDateTime, long userID,
+                                         boolean isForwarded){
+        String query = "select cm1.\"memberID\""
+                + " from \"CollectionMember\" cm1"
+                + " where cm1.\"collectionID\" = " + collectionID;
+        ResultSet rs1 = Main.getMainController().getDbCommunicator().executeQuery(query);
+        try {
+            while(rs1.next()){
+                insertTwoWayChat(userID,rs1.getLong("memberID"));
+            }
+        } catch (SQLException throwables) {
+            //throwables.printStackTrace();
+        }
+        /****************************************************************************/
+        query = "select cm2.\"chatID\""
+                + " from \"CollectionMember\" cm1, \"ChatMember\" cm2, \"Chat\" c"
+                + " where cm1.\"collectionID\" = " + collectionID
+                + " and cm2.\"memberID\" = cm1.\"memberID\""
+                + " and c.\"chatID\" = cm2.\"chatID\""
+                + " and c.\"chatType\" = " + ChatType.TWO_WAY.ordinal();
+        ResultSet rs2 = Main.getMainController().getDbCommunicator().executeQuery(query);
+        Message message = null;
+        try {
+            while(rs2.next()){
+                message = messageBuilder
+                        .setMsgText(msgText)
+                        .setMsgImage(msgImage)
+                        .setMsgDateTime(msgDateTime)
+                        .setUserID(userID)
+                        .setForwarded(isForwarded)
+                        .setMsgStatus(MessageStatus.SENT)
+                        .build();
+                message.setChatID(rs2.getLong("chatID"));
+                insertMessage(message);
+                sendMessageToChat(message);
+            }
+        } catch (SQLException e) {
+            //e.printStackTrace();
+        }
+        /****************************************************************************/
+        query = "select *"
+                + " from \"Collection\""
+                + " where \"collectionID\" = " + collectionID
+                + " and \"collectionName\" = 'all'";
+        ResultSet rs3 = Main.getMainController().getDbCommunicator().executeQuery(query);
+        try {
+            if(rs3.next())
+                sendMessageToAll(collectionID,msgText,msgImage,msgDateTime,userID,isForwarded);
+        } catch (SQLException throwables) {
+            //throwables.printStackTrace();
+            LogHandler.logger.error("could not get data from DB");
+        }
+    }
+
     public void handleNewMessageReq(Packet rp){
         SocketController socketController = Main.getMainController().getSocketController();
         long userID = socketController.getClient(rp.getClientID()).getUserID();
 
         String[] args = rp.getBody().split(",",-1);
-        String msgText = args[0];
+        String msgText = PacketHandler.getDecodedArg(args[0]);
         byte[] msgImage = null;
         if(!args[1].isEmpty())
             msgImage = Base64.getDecoder().decode(args[1]);
@@ -44,19 +220,20 @@ public class MessageController {
                 sendMessageToCollection(IDs.get(i),msgText,msgImage,msgDateTime,userID,isForwarded);
                 continue;
             }
-             message = messageBuilder
+            message = messageBuilder
                     .setMsgText(msgText)
                     .setMsgImage(msgImage)
                     .setMsgDateTime(msgDateTime)
                     .setUserID(userID)
                     .setForwarded(isForwarded)
+                    .setMsgStatus(MessageStatus.SENT)
                     .build();
-            message.setChatID(IDs.get(i));
             if(collectionItemTypes.get(i)==CollectionItemType.USER){
-                message.setMsgStatus(MessageStatus.SENT);
+                long twoWayChatID = insertTwoWayChat(userID,IDs.get(i));
+                message.setChatID(twoWayChatID);
             }
             else if(collectionItemTypes.get(i)==CollectionItemType.CHAT){
-                message.setMsgStatus(null);
+                message.setChatID(IDs.get(i));
             }
             insertMessage(message);
             sendMessageToChat(message);
@@ -64,104 +241,12 @@ public class MessageController {
 
         socketController.getClient(rp.getClientID())
                 .addResponse(new Packet(PacketType.NEW_MESSAGE_RES,
-                                "success",
-                                rp.getAuthToken(),
-                                true,
-                                rp.getClientID(),
-                                rp.getRequestID())
+                        "success",
+                        rp.getAuthToken(),
+                        true,
+                        rp.getClientID(),
+                        rp.getRequestID())
                 );
-    }
-
-    private void sendMessageToChat(Message message){
-        String query = "select cm.\"memberID\", u.\"firstName\", u.\"lastName\", m.\"userID\""
-                    + " from \"ChatMember\" cm, \"Message\" m, \"User\" u"
-                    + " where m.\"msgID\" = " + message.getMsgID()
-                    + " and m.\"chatID\" = cm.\"chatID\""
-                    + " and cm.\"memberID\" = u.\"userID\"";
-        ResultSet rs = Main.getMainController().getDbCommunicator().executeQuery(query);
-        long memberID = 0;
-        String body = "";
-        boolean isMine = false;
-        ClientHandler clt = null;
-        try {
-            while(rs.next()){
-                memberID = rs.getLong("memberID");
-                if(Main.getMainController().getSocketController().isUserOnline(memberID)){
-                    clt = Main.getMainController().getSocketController().getClientByID(memberID);
-                    if(clt.isWantToUpdateChat()){
-                        updateMessageStatus(message.getMsgID(),MessageStatus.SEEN);
-
-                        String msgImageStr = "";
-                        byte[] msgImage = message.getMsgImage();
-                        if(msgImage!=null)
-                            msgImageStr = Base64.getEncoder().encodeToString(msgImage);
-
-                        if(rs.getLong("userID")==memberID)
-                            isMine = true;
-                        else
-                            isMine = false;
-
-                        body = message.getMsgID() + ","
-                                + message.getMsgText() + ","
-                                + msgImageStr + ","
-                                + message.getMsgDateTime().toString() + ","
-                                + message.isForwarded() + ","
-                                + message.getMsgStatus() + ","
-                                + isMine + ","
-                                + rs.getString("firstName") + ","
-                                + rs.getString("lastName");
-                        clt.addResponse(
-                                new Packet(PacketType.GET_MESSAGES_RES,
-                                "success",
-                                        clt.getAuthToken(),
-                                true,
-                                        clt.getClientID(),
-                                0)
-                        );
-                    }
-                    if(clt.isWantToUpdateChatroom()){
-                        updateMessageStatus(message.getMsgID(),MessageStatus.RECEIVED);
-                        clt.addResponse(
-                                new Packet(PacketType.REFRESH_CHATROOM_RES,
-                                        "",
-                                        clt.getAuthToken(),
-                                        true,
-                                        clt.getClientID(),
-                                        0)
-                        );
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            //e.printStackTrace();
-        }
-    }
-
-    private void sendMessageToCollection(long collectionID, String msgText, byte[] msgImage,
-                                         LocalDateTime msgDateTime, long userID,
-                                         boolean isForwarded){
-        String query = "select cm2.\"chatID\" from \"CollectionMember\" cm1, \"ChatMember\" cm2"
-                    + " where cm1.\"collectionID\" = " + collectionID
-                    + " and cm2.\"memberID\" = cm1.\"memberID\"";
-        ResultSet rs = Main.getMainController().getDbCommunicator().executeQuery(query);
-        Message message = null;
-        try {
-            while(rs.next()){
-                message = messageBuilder
-                        .setMsgText(msgText)
-                        .setMsgImage(msgImage)
-                        .setMsgDateTime(msgDateTime)
-                        .setUserID(userID)
-                        .setForwarded(isForwarded)
-                        .setMsgStatus(MessageStatus.SENT)
-                        .build();
-                message.setChatID(rs.getLong("chatID"));
-                insertMessage(message);
-                sendMessageToChat(message);
-            }
-        } catch (SQLException e) {
-            //e.printStackTrace();
-        }
     }
 
     public void handleDeleteMessageReq(Packet rp){
@@ -203,6 +288,7 @@ public class MessageController {
             }
         } catch (SQLException e) {
             //e.printStackTrace();
+            LogHandler.logger.error("could not insert data to DB");
         }
 
         deleteMessage(msgID);
@@ -219,6 +305,8 @@ public class MessageController {
             lastMsgDateTime = LocalDateTime.parse(args[1]);
         long chatID = Long.parseLong(args[2]);
         /***************************************************************************************/
+        setReceivedMessagesToSeen(chatID,userID);
+
         String query = "select m.*, u.\"firstName\", u.\"lastName\""
                 + " from \"Message\" m, \"User\" u"
                 + " where m.\"chatID\" = " + chatID;
@@ -248,14 +336,14 @@ public class MessageController {
                     msgImageStr = Base64.getEncoder().encodeToString(msgImage);
 
                 body = rs.getLong("msgID") + ","
-                        + rs.getString("msgText") + ","
+                        + PacketHandler.makeEncodedArg(rs.getString("msgText")) + ","
                         + msgImageStr + ","
                         + rs.getTimestamp("msgDateTime").toLocalDateTime().toString() + ","
                         + rs.getBoolean("forwarded") + ","
                         + MessageStatus.values()[rs.getInt("msgStatus")] + ","
                         + isMine + ","
-                        + rs.getString("firstName") + ","
-                        + rs.getString("lastName");
+                        + PacketHandler.makeEncodedArg(rs.getString("firstName")) + ","
+                        + PacketHandler.makeEncodedArg(rs.getString("lastName"));
                 clt.addResponse(
                         new Packet(PacketType.GET_MESSAGES_RES,
                                 body,
@@ -277,13 +365,15 @@ public class MessageController {
         String[] args = rp.getBody().split(",",-1);
 
         long msgID = Long.parseLong(args[0]);
-        String body = "error";
+        String body = "error,0,";
+        String msgText = "";
         if(!args[1].isEmpty()) {
+            msgText = PacketHandler.getDecodedArg(args[1]);
             String query = "update \"Message\" set \"msgText\" = "
-                    + "'" + args[1] + "'"
+                    + "'" + msgText + "'"
                     + " where \"msgID\" = " + msgID;
             if(Main.getMainController().getDbCommunicator().executeUpdate(query)!=0)
-                body = "success";
+                body = "success," + msgID + "," + PacketHandler.makeEncodedArg(msgText);
         }
         socketController.getClient(rp.getClientID()).addResponse(
                 new Packet(PacketType.EDIT_MESSAGE_RES,
@@ -293,6 +383,43 @@ public class MessageController {
                         rp.getClientID(),
                         rp.getRequestID())
         );
+    }
+
+    private long insertTwoWayChat(long userID1, long userID2){
+        String query = "select c.\"chatID\""
+                + " from \"ChatMember\" cm, \"Chat\" c"
+                + " where c.\"chatType\" = " + ChatType.TWO_WAY.ordinal()
+                + " and exists (select * from \"ChatMember\" cm1"
+                + " where cm1.\"chatID\" = c.\"chatID\""
+                + " and cm1.\"memberID\" = " + userID1 + ")"
+                + " and exists (select * from \"ChatMember\" cm2"
+                + " where cm2.\"chatID\" = c.\"chatID\""
+                + " and cm2.\"memberID\" = " + userID2 + ")";
+        ResultSet rs = Main.getMainController().getDbCommunicator().executeQuery(query);
+        long chatID = 0;
+        String chatName = "";
+        try {
+            if(rs.next()){
+                chatID = rs.getLong("chatID");
+            }
+            else{
+                query = "select \"firstName\", \"lastName\""
+                        + " from \"User\""
+                        + " where \"userID\" = " + userID1
+                        + " or \"userID\" = " + userID2;
+                ResultSet rs1 = Main.getMainController().getDbCommunicator().executeQuery(query);
+                rs1.next(); chatName = rs1.getString("firstName") + " " + rs1.getString("lastName");
+                chatName += " | ";
+                rs1.next(); chatName += rs1.getString("firstName") + " " + rs1.getString("lastName");
+                chatID = ChatController.insertChat(chatName,ChatType.TWO_WAY);
+                ChatController.insertChatMember(chatID,userID1);
+                ChatController.insertChatMember(chatID,userID2);
+            }
+        } catch (SQLException throwables) {
+            //throwables.printStackTrace();
+            LogHandler.logger.error("could not insert data to DB");
+        }
+        return chatID;
     }
 
     public static void updateMessageStatus(long msgID,MessageStatus messageStatus){
@@ -351,6 +478,78 @@ public class MessageController {
         else{
             LogHandler.logger.error("could not remove Message from DB");
             return false;
+        }
+    }
+
+    public static void setSentMessagesToReceived(long userID){
+        String query = "select m.\"msgID\", m.\"chatID\" from \"Message\" m, \"ChatMember\" cm"
+                    + " where m.\"chatID\" = cm.\"chatID\""
+                    + " and cm.\"memberID\" = " + userID
+                    + " and m.\"userID\" != " + userID
+                    + " and m.\"msgStatus\" = " + MessageStatus.SENT.ordinal();
+        ResultSet rs = Main.getMainController().getDbCommunicator().executeQuery(query);
+
+        long msgID=0, chatID=0;
+        try {
+            while (rs.next()){
+                msgID = rs.getLong("msgID");
+                chatID = rs.getLong("chatID");
+                updateMessageStatus(msgID,MessageStatus.RECEIVED);
+                sendUpdatedMessageStatusToAll(chatID,msgID,MessageStatus.RECEIVED);
+            }
+        } catch (SQLException throwables) {
+            //throwables.printStackTrace();
+            LogHandler.logger.error("could not update message in DB");
+        }
+    }
+
+    public static void setReceivedMessagesToSeen(long chatID,long userID){
+        String query = "select m.\"msgID\" from \"Message\" m"
+                + " where m.\"chatID\" = " + chatID
+                + " and m.\"userID\" != " + userID
+                + " and m.\"msgStatus\" = " + MessageStatus.RECEIVED.ordinal();
+        ResultSet rs1 = Main.getMainController().getDbCommunicator().executeQuery(query);
+
+        long msgID = 0;
+        try {
+            while (rs1.next()){
+                msgID = rs1.getLong("msgID");
+                updateMessageStatus(msgID,MessageStatus.SEEN);
+                sendUpdatedMessageStatusToAll(chatID,msgID,MessageStatus.SEEN);
+            }
+        } catch (SQLException throwables) {
+            //throwables.printStackTrace();
+            LogHandler.logger.error("could not update message in DB");
+        }
+    }
+
+    private static void sendUpdatedMessageStatusToAll(long chatID, long msgID, MessageStatus messageStatus){
+        SocketController socketController = Main.getMainController().getSocketController();
+        String query = "select \"memberID\" from \"ChatMember\""
+                + " where \"chatID\" = " + chatID;
+        ResultSet rs2 = Main.getMainController().getDbCommunicator().executeQuery(query);
+        long memberID = 0;
+        ClientHandler clt = null;
+        try {
+            while (rs2.next()){
+                memberID = rs2.getLong("memberID");
+                if(socketController.isUserOnline(memberID)){
+                    clt = socketController.getClientByID(memberID);
+                    if(clt.isWantToUpdateChat()){
+                        clt.addResponse(
+                                new Packet(PacketType.MESSAGE_CHANGE_STATUS_RES,
+                                        msgID + "," + messageStatus,
+                                        clt.getAuthToken(),
+                                        true,
+                                        clt.getClientID(),
+                                        0)
+                        );
+                    }
+                }
+            }
+        } catch (SQLException throwables) {
+            //throwables.printStackTrace();
+            LogHandler.logger.error("could not get data from DB");
         }
     }
 }

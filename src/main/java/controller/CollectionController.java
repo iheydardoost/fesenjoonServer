@@ -31,7 +31,7 @@ public class CollectionController {
             String body = "";
             while(rs.next()){
                 body = rs.getLong("collectionID") + ","
-                        + rs.getString("collectionName");
+                        + PacketHandler.makeEncodedArg(rs.getString("collectionName"));
                 clt.addResponse(
                         new Packet(PacketType.GET_FOLDER_LIST_RES,
                                 body,
@@ -51,7 +51,8 @@ public class CollectionController {
         SocketController socketController = Main.getMainController().getSocketController();
         long userID = socketController.getClient(rp.getClientID()).getUserID();
         String body = "error";
-        if(insertCollection(userID,rp.getBody())!=0)
+        String collectionName = PacketHandler.getDecodedArg(rp.getBody());
+        if(insertCollection(userID,collectionName)!=0)
             body = "success";
         socketController.getClient(rp.getClientID())
                 .addResponse(
@@ -102,9 +103,9 @@ public class CollectionController {
             boolean isSelected = false;
             while(rs.next()){
                 isSelected = isMemberInCollection(rs.getLong("userID"),collectionID);
-                body =  rs.getString("firstName") + ","
-                        + rs.getString("lastName") + ","
-                        + rs.getString("userName") + ","
+                body =  PacketHandler.makeEncodedArg(rs.getString("firstName")) + ","
+                        + PacketHandler.makeEncodedArg(rs.getString("lastName")) + ","
+                        + PacketHandler.makeEncodedArg(rs.getString("userName")) + ","
                         + isSelected;
                 clt.addResponse(
                         new Packet(PacketType.GET_EDIT_FOLDER_LIST_RES,
@@ -134,7 +135,7 @@ public class CollectionController {
         int updatedRowsNum = 0;
         long memberID = 0;
         for (int i = 1; i < args.length; i++) {
-            memberID = SettingController.findUserID(args[i]);
+            memberID = SettingController.findUserID(PacketHandler.getDecodedArg(args[i]));
             if(memberID!=0)
                 if(insertCollectionMember(collectionID,memberID))
                     updatedRowsNum++;

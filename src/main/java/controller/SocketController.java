@@ -105,9 +105,7 @@ public class SocketController implements Runnable{
 
     public void handleWantUpdateChatReq(Packet rp){
         ClientHandler clt = this.getClient(rp.getClientID());
-        String[] args = rp.getBody().split(",",-1);
-        clt.setWantToUpdateChat(Boolean.parseBoolean(args[0]));
-        clt.setChatIDToUpdate(Long.parseLong(args[1]));
+        clt.setWantToUpdateChat(Boolean.parseBoolean(rp.getBody()));
     }
 
     public void handleWantUpdateChatroomReq(Packet rp){

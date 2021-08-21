@@ -27,7 +27,7 @@ public class Main {
         mainController.getDbCommunicator().initDBCommunicator();
         mainController.getSocketController().initConnection();
 
-//        String str = "salam, chetori?, khoobi$, ha$ $vaghean, bashe.";
+//        String str = "";
 //        System.out.println(str);
 //        byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
 //        String encodedStr = Base64.getEncoder().encodeToString(bytes);
@@ -36,10 +36,6 @@ public class Main {
 //        String encodedStr1 = new String(bytes1,StandardCharsets.UTF_8);
 //        System.out.println(encodedStr1);
 
-
-//        ByteBuffer byteBuffer = ByteBuffer.allocate(Long.BYTES);
-//        byteBuffer.putLong(1L);
-//        byte[] bytes1 = byteBuffer.array();
     }
 
     private static void initialize(){

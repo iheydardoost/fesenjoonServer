@@ -261,9 +261,9 @@ public class RelationController {
                 if(userImage!=null)
                     userImageStr = Base64.getEncoder().encodeToString(userImage);
 
-                body = rs.getString("userName") + ","
-                        + rs.getString("firstName") + ","
-                        + rs.getString("lastName") + ","
+                body = PacketHandler.makeEncodedArg(rs.getString("userName")) + ","
+                        + PacketHandler.makeEncodedArg(rs.getString("firstName")) + ","
+                        + PacketHandler.makeEncodedArg(rs.getString("lastName")) + ","
                         + userImageStr + ","
                         + rs.getLong("userID");
                 clt.addResponse(

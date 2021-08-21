@@ -26,16 +26,16 @@ public class AuthenticationController {
 //        for (int i = 0; i < bodyArgs.length; i++) {
 //            System.out.println(i + ": " + bodyArgs[i]);
 //        }
-        String firstName = bodyArgs[0];
-        String lastName = bodyArgs[1];
-        String userName = bodyArgs[2];
-        String password = bodyArgs[3];
+        String firstName = PacketHandler.getDecodedArg(bodyArgs[0]);
+        String lastName = PacketHandler.getDecodedArg(bodyArgs[1]);
+        String userName = PacketHandler.getDecodedArg(bodyArgs[2]);
+        String password = PacketHandler.getDecodedArg(bodyArgs[3]);
         LocalDate birthDate = null;
         if(!bodyArgs[4].equals("null"))
             birthDate = LocalDate.parse(bodyArgs[4]);
-        String email = bodyArgs[5];
-        String phoneNumber = bodyArgs[6];
-        String bio = bodyArgs[7];
+        String email = PacketHandler.getDecodedArg(bodyArgs[5]);
+        String phoneNumber = PacketHandler.getDecodedArg(bodyArgs[6]);
+        String bio = PacketHandler.getDecodedArg(bodyArgs[7]);
         for(int i=8; i<bodyArgs.length; i++){
             bio += ("," + bodyArgs[i]);
         }
@@ -167,8 +167,8 @@ public class AuthenticationController {
     public void handleLogIn(Packet rp){
 //        System.out.println("in handle login");
         String[] bodyArgs = rp.getBody().split(",",-1);
-        String userName = bodyArgs[0];
-        int passwordHash = bodyArgs[1].hashCode();
+        String userName = PacketHandler.getDecodedArg(bodyArgs[0]);
+        int passwordHash = PacketHandler.getDecodedArg(bodyArgs[1]).hashCode();
         /**********************************************/
         String query = "select * from \"User\" u where u.\"userName\" = '" + userName + "'";
         ResultSet rs = Main.getMainController().getDbCommunicator().executeQuery(query);
@@ -226,6 +226,7 @@ public class AuthenticationController {
                 socketController.getClient(rp.getClientID())
                         .setAuthToken(newAuthToken)
                         .setUserID(userID);
+                MessageController.setSentMessagesToReceived(userID);
                 socketController.getClient(rp.getClientID())
                         .addResponse(
                                 new Packet(PacketType.LOG_IN_RES,

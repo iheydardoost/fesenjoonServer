@@ -204,6 +204,9 @@ public class MainController {
             case EDIT_MESSAGE_REQ:
                 messageController.handleEditMessageReq(rp);
                 break;
+            case GET_CHAT_ID_BY_USER_ID_REQ:
+                chatController.handleGetChatIDReq(rp);
+                break;
             default:
                 break;
         }

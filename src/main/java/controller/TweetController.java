@@ -21,7 +21,7 @@ public class TweetController {
         long userID = socketController.getClient(rp.getClientID()).getUserID();
 
         String[] args = rp.getBody().split(",",-1);
-        String tweetText = args[0];
+        String tweetText = PacketHandler.getDecodedArg(args[0]);
         LocalDateTime tweetDateTime = LocalDateTime.parse(args[1]);
         long parentTweetID = 0;
         if(!args[2].isEmpty())
@@ -271,16 +271,16 @@ public class TweetController {
                 if(userImage!=null)
                     userImageStr = Base64.getEncoder().encodeToString(userImage);
 
-                body = rs.getString("tweetText") + ","
+                body = PacketHandler.makeEncodedArg(rs.getString("tweetText")) + ","
                         + rs.getTimestamp("tweetDateTime").toLocalDateTime().toString() + ","
                         + rs.getLong("userID") + ","
                         + rs.getLong("tweetID") + ","
                         + rs.getBoolean("retweeted") + ","
                         + youLiked + ","
                         + tweetImageStr + ","
-                        + rs.getString("userName") + ","
-                        + rs.getString("firstName") + ","
-                        + rs.getString("lastName") + ","
+                        + PacketHandler.makeEncodedArg(rs.getString("userName")) + ","
+                        + PacketHandler.makeEncodedArg(rs.getString("firstName")) + ","
+                        + PacketHandler.makeEncodedArg(rs.getString("lastName")) + ","
                         + userImageStr + ","
                         + likedNum + ","
                         + commentNum + ","
@@ -388,16 +388,16 @@ public class TweetController {
                 if(userImage!=null)
                     userImageStr = Base64.getEncoder().encodeToString(userImage);
 
-                body = rs.getString("tweetText") + ","
+                body = PacketHandler.makeEncodedArg(rs.getString("tweetText")) + ","
                         + rs.getTimestamp("tweetDateTime").toLocalDateTime().toString() + ","
                         + rs.getLong("userID") + ","
                         + rs.getLong("tweetID") + ","
                         + rs.getBoolean("retweeted") + ","
                         + youLiked + ","
                         + tweetImageStr + ","
-                        + rs.getString("userName") + ","
-                        + rs.getString("firstName") + ","
-                        + rs.getString("lastName") + ","
+                        + PacketHandler.makeEncodedArg(rs.getString("userName") )+ ","
+                        + PacketHandler.makeEncodedArg(rs.getString("firstName")) + ","
+                        + PacketHandler.makeEncodedArg(rs.getString("lastName")) + ","
                         + userImageStr + ","
                         + likedNum + ","
                         + commentNum;

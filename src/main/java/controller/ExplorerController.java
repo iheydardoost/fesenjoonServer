@@ -59,7 +59,7 @@ public class ExplorerController {
         SocketController socketController = Main.getMainController().getSocketController();
         long subjectID = socketController.getClient(rp.getClientID()).getUserID();
         String[] args = rp.getBody().split(",",-1);
-        String userName = args[0];
+        String userName = PacketHandler.getDecodedArg(args[0]);
         PacketType packetType;
         if(args[1].equals("true"))
             packetType = PacketType.SEARCH_USERNAME_EXPLORER_RES;

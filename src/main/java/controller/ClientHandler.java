@@ -43,7 +43,6 @@ public class ClientHandler implements Runnable{
             //e.printStackTrace();
             LogHandler.logger.error("socket output/input stream has problem");
         }
-
         packetHandler = new PacketHandler();
 
         loopHandler = new LoopHandler(200, this);
@@ -141,13 +140,5 @@ public class ClientHandler implements Runnable{
 
     public void setWantToUpdateChat(boolean wantToUpdateChat) {
         this.wantToUpdateChat = wantToUpdateChat;
-    }
-
-    public long getChatIDToUpdate() {
-        return chatIDToUpdate;
-    }
-
-    public void setChatIDToUpdate(long chatIDToUpdate) {
-        this.chatIDToUpdate = chatIDToUpdate;
     }
 }

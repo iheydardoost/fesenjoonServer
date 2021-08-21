@@ -67,7 +67,7 @@ public class NotificationController {
         SocketController socketController = Main.getMainController().getSocketController();
         long objectID = socketController.getClient(rp.getClientID()).getUserID();
         long subjectID = 0;
-        String userName = rp.getBody();
+        String userName = PacketHandler.getDecodedArg(rp.getBody());
 
         String query = "select u.\"userID\" from \"User\" u"
                 + " where u.\"userName\" = " + "'" + userName + "'"
@@ -104,7 +104,7 @@ public class NotificationController {
         long objectID = socketController.getClient(rp.getClientID()).getUserID();
         long subjectID = 0;
         String[] args = rp.getBody().split(",",-1);
-        String userName = args[0];
+        String userName = PacketHandler.getDecodedArg(args[0]);
 
         String query = "select u.\"userID\" from \"User\" u"
                 + " where u.\"userName\" = " + "'" + userName + "'"
@@ -164,9 +164,9 @@ public class NotificationController {
                         message = "pending";
                 }
 
-                body = rs.getString("userName") + ","
-                        + rs.getString("firstName") + ","
-                        + rs.getString("lastName") + ","
+                body = PacketHandler.makeEncodedArg(rs.getString("userName")) + ","
+                        + PacketHandler.makeEncodedArg(rs.getString("firstName")) + ","
+                        + PacketHandler.makeEncodedArg(rs.getString("lastName")) + ","
                         + userImageStr + ","
                         + message;
                 clt.addResponse(

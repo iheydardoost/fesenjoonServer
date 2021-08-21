@@ -50,7 +50,7 @@ public class SettingController {
     public void handleChangeSettingReq(Packet rp){
         String[] bodyArgs = rp.getBody().split(",",-1);
         String variable = bodyArgs[0];
-        String value = bodyArgs[1];
+        String value = PacketHandler.getDecodedArg(bodyArgs[1]);
 
         int updatedRowsNum = 0;
         SocketController socketController = Main.getMainController().getSocketController();

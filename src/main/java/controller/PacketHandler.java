@@ -3,9 +3,24 @@ package controller;
 import model.Packet;
 import model.PacketType;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+
 public class PacketHandler {
 
     public PacketHandler() {
+    }
+
+    public static String makeEncodedArg(String arg){
+        byte[] bytes = arg.getBytes(StandardCharsets.UTF_8);
+        String encodedStr = Base64.getEncoder().encodeToString(bytes);
+        return encodedStr;
+    }
+
+    public static String getDecodedArg(String arg){
+        byte[] bytes = Base64.getDecoder().decode(arg);
+        String decodedStr = new String(bytes,StandardCharsets.UTF_8);
+        return decodedStr;
     }
 
     public String makePacketStr(Packet packet){
