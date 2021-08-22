@@ -107,5 +107,6 @@ public enum PacketType {
     MESSAGE_CHANGE_STATUS_RES,
     GET_CHAT_ID_BY_USER_ID_REQ,
     GET_CHAT_ID_BY_USER_ID_RES,
+    SAVE_USER_DATA_RES,
     BYE
 }

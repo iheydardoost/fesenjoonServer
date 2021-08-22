@@ -2,10 +2,7 @@ package controller;
 
 import controller.builder.UserBuilder;
 import main.Main;
-import model.ChatType;
-import model.Packet;
-import model.PacketType;
-import model.User;
+import model.*;
 
 import java.security.SecureRandom;
 import java.sql.ResultSet;
@@ -143,6 +140,7 @@ public class AuthenticationController {
                                     rp.getRequestID())
                     );
             createMessagingDefaults(user);
+            PrivateController.sendSaveUserDataToClient(user.getUserID());
             LogHandler.logger.info("userID:" + user.getUserID() + " signed up successfully");
         }
         else{
@@ -165,7 +163,6 @@ public class AuthenticationController {
     }
 
     public void handleLogIn(Packet rp){
-//        System.out.println("in handle login");
         String[] bodyArgs = rp.getBody().split(",",-1);
         String userName = PacketHandler.getDecodedArg(bodyArgs[0]);
         int passwordHash = PacketHandler.getDecodedArg(bodyArgs[1]).hashCode();
@@ -236,6 +233,7 @@ public class AuthenticationController {
                                         rp.getClientID(),
                                         rp.getRequestID())
                         );
+                PrivateController.sendSaveUserDataToClient(userID);
                 LogHandler.logger.info("userID:" + userID + " logged in successfully");
             }
             else{

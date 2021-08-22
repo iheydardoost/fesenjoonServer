@@ -26,16 +26,6 @@ public class Main {
         mainController = new MainController();
         mainController.getDbCommunicator().initDBCommunicator();
         mainController.getSocketController().initConnection();
-
-//        String str = "";
-//        System.out.println(str);
-//        byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
-//        String encodedStr = Base64.getEncoder().encodeToString(bytes);
-//        System.out.println(encodedStr);
-//        byte[] bytes1 = Base64.getDecoder().decode(encodedStr);
-//        String encodedStr1 = new String(bytes1,StandardCharsets.UTF_8);
-//        System.out.println(encodedStr1);
-
     }
 
     private static void initialize(){

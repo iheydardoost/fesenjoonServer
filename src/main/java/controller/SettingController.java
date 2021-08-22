@@ -78,6 +78,7 @@ public class SettingController {
         String body = "";
         if(updatedRowsNum==1){
             body = "success," + variable;
+            PrivateController.sendSaveUserDataToClient(userID);
             LogHandler.logger.info(variable + " changed to " + value + " (userID: " + userID + ")");
         }
         else if(updatedRowsNum==0){

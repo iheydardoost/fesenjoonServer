@@ -6,6 +6,7 @@ import model.Packet;
 import model.PacketType;
 import model.RelationType;
 
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -52,6 +53,7 @@ public class PrivateController {
         String body = "";
         if(updatedRowsNum==1){
             body = "success," + variable;
+            PrivateController.sendSaveUserDataToClient(userID);
             if(variable.equals("userImage"))
                 LogHandler.logger.info("userID: " + userID + " changed userImage");
             else
@@ -249,6 +251,46 @@ public class PrivateController {
         } catch (SQLException e) {
             //e.printStackTrace();
             LogHandler.logger.error("could not get result from DB");
+        }
+    }
+
+    public static void sendSaveUserDataToClient(long userID){
+        String query = "select * from \"User\" u where u.\"userID\" = " + userID;
+        ResultSet rs = Main.getMainController().getDbCommunicator().executeQuery(query);
+
+        SocketController socketController = Main.getMainController().getSocketController();
+
+        try {
+            if(rs.next()) {
+                byte[] userImage = rs.getBytes("userImage");
+                String userImageStr = "";
+                if (userImage != null)
+                    userImageStr = Base64.getEncoder().encodeToString(userImage);
+                String body = rs.getLong("userID") + ","
+                        + PacketHandler.makeEncodedArg(rs.getString("firstName")) + ","
+                        + PacketHandler.makeEncodedArg(rs.getString("lastName")) + ","
+                        + PacketHandler.makeEncodedArg(rs.getString("userName")) + ","
+                        + rs.getInt("passwordHash") + ","
+                        + rs.getDate("dateOfBirth") + ","
+                        + PacketHandler.makeEncodedArg(rs.getString("email")) + ","
+                        + PacketHandler.makeEncodedArg(rs.getString("phoneNumber")) + ","
+                        + PacketHandler.makeEncodedArg(rs.getString("bio")) + ","
+                        + LastSeenStatus.values()[rs.getInt("lastSeenStatus")] + ","
+                        + rs.getBoolean("accountPrivate") + ","
+                        + rs.getBoolean("accountActive") + ","
+                        + userImageStr;
+                ClientHandler clt = socketController.getClientByID(userID);
+                clt.addResponse(
+                        new Packet(PacketType.SAVE_USER_DATA_RES,
+                                body,
+                                clt.getAuthToken(),
+                                true,
+                                clt.getClientID(),
+                                0)
+                );
+            }
+        }catch (SQLException e){
+            //e.printStackTrace();
         }
     }
 }
