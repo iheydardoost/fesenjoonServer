@@ -326,7 +326,8 @@ public class TweetController {
                 + " and not exists (" + subQuery2 + ")"
                 + " and (u.\"accountPrivate\" = false"
                 + " or (u.\"accountPrivate\" = true"
-                + " and exists (" + subQuery1 + ")))";
+                + " and exists (" + subQuery1 + "))"
+                + " or u.\"userID\" = " + userID + ")";
         if(lastTweetDateTime !=null) {
             query += (" and t.\"tweetDateTime\" < '"
                     + lastTweetDateTime.toLocalDate().toString()
